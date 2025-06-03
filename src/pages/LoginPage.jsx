@@ -1,168 +1,397 @@
-import { useState } from 'react';
-import { User, Lock, Eye, EyeOff } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+const LoginPage = () => {
+  const [isActive, setIsActive] = useState(false);
 
-  // Add animation classes
-  const animationStyles = `
-    @keyframes blob {
-      0% {
-        transform: translate(-50%, -50%) scale(1);
-      }
-      50% {
-        transform: translate(-55%, -45%) scale(1.1);
-      }
-      100% {
-        transform: translate(-50%, -50%) scale(1);
-      }
-    }
-    .animate-blob {
-      animation: blob 7s infinite alternate;
-    }
-    .animation-delay-2000 {
-      animation-delay: 2s;
-    }
-    .animation-delay-4000 {
-      animation-delay: 4s;
-    }
-  `;
+  useEffect(() => {
+    // Add Google Fonts link to head
+    const link = document.createElement('link');
+    link.href = 'https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+
+    // Add Boxicons for icons
+    const boxiconsLink = document.createElement('link');
+    boxiconsLink.href = 'https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css';
+    boxiconsLink.rel = 'stylesheet';
+    document.head.appendChild(boxiconsLink);
+
+    return () => {
+      document.head.removeChild(link);
+      document.head.removeChild(boxiconsLink);
+    };
+  }, []);
+
+  const handleRegisterClick = () => {
+    setIsActive(true);
+  };
+
+  const handleLoginClick = () => {
+    setIsActive(false);
+  };
+
+  const containerStyle = {
+    fontFamily: '"Poppins", sans-serif',
+    position: 'relative',
+    width: '850px',
+    height: '550px',
+    background: 'linear-gradient(135deg, #90D1CA, #f7f7e5, #86cab9, #005e5e)',
+    margin: '20px',
+    borderRadius: '30px',
+    boxShadow: '0 0 30px rgba(0, 0, 0, .2)',
+    overflow: 'hidden'
+  };
+
+  const formBoxBaseStyle = {
+    position: 'absolute',
+    right: isActive ? '50%' : '0',
+    width: '50%',
+    height: '100%',
+    background: 'linear-gradient(135deg, #f1f8e6, #129990)',
+    display: 'flex',
+    alignItems: 'center',
+    color: '#333',
+    textAlign: 'center',
+    padding: '40px',
+    zIndex: 1,
+    transition: '.6s ease-in-out 1.2s, visibility 0s 1s'
+  };
+
+  const formBoxRegisterStyle = {
+    ...formBoxBaseStyle,
+    visibility: isActive ? 'visible' : 'hidden'
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: '13px 50px 13px 20px',
+    background: '#FFFBDE',
+    borderRadius: '8px',
+    border: 'none',
+    outline: 'none',
+    fontSize: '16px',
+    color: '#333',
+    fontWeight: '500'
+  };
+
+  const btnStyle = {
+    width: '100%',
+    height: '48px',
+    background: 'linear-gradient(135deg, #90D1CA, #096B68)',
+    borderRadius: '8px',
+    boxShadow: '0 0 10px rgba(0, 0, 0, .1)',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '16px',
+    color: '#fff',
+    fontWeight: '600'
+  };
+
+  const toggleBoxBeforeStyle = {
+    content: '""',
+    position: 'absolute',
+    left: isActive ? '50%' : '-250%',
+    width: '300%',
+    height: '100%',
+    background: '#096B68',
+    zIndex: 2,
+    transition: '1.8s ease-in-out'
+  };
+
+  const togglePanelLeftStyle = {
+    position: 'absolute',
+    left: isActive ? '-50%' : '0',
+    width: '50%',
+    height: '100%',
+    color: '#fff',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2,
+    transition: '.6s ease-in-out',
+    transitionDelay: isActive ? '.6s' : '1.2s'
+  };
+
+  const togglePanelRightStyle = {
+    position: 'absolute',
+    right: isActive ? '0' : '-50%',
+    width: '50%',
+    height: '100%',
+    color: '#fff',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2,
+    transition: '.6s ease-in-out',
+    transitionDelay: isActive ? '1.2s' : '.6s'
+  };
+
+  const toggleBtnStyle = {
+    width: '160px',
+    height: '46px',
+    background: 'transparent',
+    border: '2px solid #fff',
+    boxShadow: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '16px',
+    color: '#fff',
+    fontWeight: '600'
+  };
 
   return (
-    <div className="min-h-screen flex">
-      <style>{animationStyles}</style>
-      {/* Left side - Login Form */}
-      <div className="w-1/4 p-8" style={{ 
-        background: 'linear-gradient(135deg, #096B68 0%, #129990 100%)' 
-      }}>
-        <div className="h-16"> {/* Empty div to match height of navbar on right side */}
-        </div>
-
-        <div className="flex justify-center mb-6 mt-8">
-          <div className="h-16 w-16 rounded-full border-2 flex items-center justify-center shadow-lg" 
-            style={{ 
-              borderColor: '#90D1CA',
-              background: 'linear-gradient(135deg, rgba(9, 107, 104, 0.7) 0%, rgba(144, 209, 202, 0.3) 100%)',
-              boxShadow: '0 6px 20px rgba(144, 209, 202, 0.4)'
-            }}>
-            <User size={28} style={{ color: '#FFFBDE' }} />
+    <>
+      <style>
+        {`
+          @media screen and (max-width: 650px) {
+            .login-container {
+              height: calc(100vh - 40px) !important;
+            }
+            .form-box-mobile {
+              bottom: 0 !important;
+              width: 100% !important;
+              height: 70% !important;
+              right: 0 !important;
+            }
+            .form-box-mobile.active {
+              right: 0 !important;
+              bottom: 30% !important;
+            }
+            .toggle-box-before-mobile {
+              left: 0 !important;
+              top: ${isActive ? '70%' : '-270%'} !important;
+              width: 100% !important;
+              height: 300% !important;
+              border-radius: 20vw !important;
+            }
+            .toggle-panel-mobile {
+              width: 100% !important;
+              height: 30% !important;
+            }
+            .toggle-left-mobile {
+              top: ${isActive ? '-30%' : '0'} !important;
+              left: 0 !important;
+            }
+            .toggle-right-mobile {
+              right: 0 !important;
+              bottom: ${isActive ? '0' : '-30%'} !important;
+            }
+          }
+          @media screen and (max-width: 400px) {
+            .form-box-mobile {
+              padding: 20px !important;
+            }
+            .toggle-panel-mobile h1 {
+              font-size: 30px !important;
+            }
+          }
+        `}
+      </style>
+      
+      <div 
+        className="min-h-screen flex justify-center items-center"
+        style={{
+          margin: 0,
+          padding: 0,
+          boxSizing: 'border-box',
+          fontFamily: '"Poppins", sans-serif',
+          textDecoration: 'none',
+          listStyle: 'none',
+          background: "url('bg.jpeg') no-repeat center center/cover"
+        }}
+      >
+        <div 
+          className="login-container form-box-mobile"
+          style={containerStyle}
+        >
+          {/* Login Form */}
+          <div 
+            className="form-box-mobile"
+            style={formBoxBaseStyle}
+          >
+            <div className="w-full">
+              <h1 style={{ fontSize: '36px', margin: '-10px 0' }}>Sign In</h1>
+              <div style={{ position: 'relative', margin: '30px 0' }}>
+                <input 
+                  type="email" 
+                  placeholder="Email" 
+                  required 
+                  style={inputStyle}
+                />
+                <i 
+                  className="bx bxs-envelope"
+                  style={{
+                    position: 'absolute',
+                    right: '20px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    fontSize: '20px'
+                  }}
+                ></i>
+              </div>
+              <div style={{ position: 'relative', margin: '30px 0' }}>
+                <input 
+                  type="password" 
+                  placeholder="Password" 
+                  required 
+                  style={inputStyle}
+                />
+                <i 
+                  className="bx bxs-lock-alt"
+                  style={{
+                    position: 'absolute',
+                    right: '20px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    fontSize: '20px'
+                  }}
+                ></i>
+              </div>
+              <div style={{ margin: '-15px 0 15px' }}>
+                <a 
+                  href="#" 
+                  style={{ fontSize: '14.5px', color: '#333' }}
+                >
+                  Forgot Password?
+                </a>
+              </div>
+              <button type="button" style={btnStyle}>Sign In</button>
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-4 mb-5">
-          <div className="relative">
-            <input 
-              type="text" 
-              placeholder="E-Mail"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="text-gray-800 pl-8 pr-3 py-2 rounded-md w-full border focus:outline-none focus:border-teal-500 text-sm shadow-sm transition-all duration-200"
-              style={{ 
-                backgroundColor: '#FFFBDE', 
-                borderColor: '#90D1CA',
-                boxShadow: '0 2px 10px rgba(144, 209, 202, 0.1)'
-              }}
-            />
-            <User size={14} className="absolute left-2.5 top-2.5" style={{ color: '#129990' }} />
+          {/* Registration Form */}
+          <div 
+            className="form-box-mobile"
+            style={formBoxRegisterStyle}
+          >
+            <div className="w-full">
+              <h1 style={{ fontSize: '36px', margin: '-10px 0' }}>Sign Up</h1>
+              <div style={{ position: 'relative', margin: '30px 0' }}>
+                <input 
+                  type="text" 
+                  placeholder="Full Name" 
+                  required 
+                  style={inputStyle}
+                />
+                <i 
+                  className="bx bxs-user"
+                  style={{
+                    position: 'absolute',
+                    right: '20px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    fontSize: '20px'
+                  }}
+                ></i>
+              </div>
+              <div style={{ position: 'relative', margin: '30px 0' }}>
+                <input 
+                  type="email" 
+                  placeholder="Email" 
+                  required 
+                  style={inputStyle}
+                />
+                <i 
+                  className="bx bxs-envelope"
+                  style={{
+                    position: 'absolute',
+                    right: '20px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    fontSize: '20px'
+                  }}
+                ></i>
+              </div>
+              <div style={{ position: 'relative', margin: '30px 0' }}>
+                <input 
+                  type="text" 
+                  placeholder="Phone Number" 
+                  required 
+                  style={inputStyle}
+                />
+                <i 
+                  className="bx bxs-phone"
+                  style={{
+                    position: 'absolute',
+                    right: '20px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    fontSize: '20px'
+                  }}
+                ></i>
+              </div>
+              <div style={{ position: 'relative', margin: '30px 0' }}>
+                <input 
+                  type="password" 
+                  placeholder="Password" 
+                  required 
+                  style={inputStyle}
+                />
+                <i 
+                  className="bx bxs-lock-alt"
+                  style={{
+                    position: 'absolute',
+                    right: '20px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    fontSize: '20px'
+                  }}
+                ></i>
+              </div>
+              <button type="button" style={btnStyle}>Sign Up</button>
+            </div>
           </div>
-          <div className="relative">
-            <input 
-              type={showPassword ? "text" : "password"}
-              placeholder="••••••••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="text-gray-800 pl-8 pr-8 py-2 rounded-md w-full border focus:outline-none focus:border-teal-500 text-sm shadow-sm transition-all duration-200"
-              style={{ 
-                backgroundColor: '#FFFBDE', 
-                borderColor: '#90D1CA',
-                boxShadow: '0 2px 10px rgba(144, 209, 202, 0.1)'
-              }}
-            />
-            <Lock size={14} className="absolute left-2.5 top-2.5" style={{ color: '#129990' }} />
+
+          {/* Toggle Box */}
+          <div style={{ position: 'absolute', width: '100%', height: '100%' }}>
+            <div 
+              className="toggle-box-before-mobile"
+              style={toggleBoxBeforeStyle}
+            ></div>
+          </div>
+
+          {/* Toggle Panels */}
+          <div 
+            className="toggle-panel-mobile toggle-left-mobile"
+            style={togglePanelLeftStyle}
+          >
+            <h1 className="text-4xl">Welcome to</h1>
+            <h1 className="text-4xl">
+              <span style={{ color: '#90D1CA' }}>IT</span>
+              <span style={{ color: '#FFFBDE' }}>Ventory</span>
+            </h1>
+            <p style={{ fontSize: '14.5px', margin: '15px 0', marginBottom: '20px' }}>
+              Don't have an account?
+            </p>
             <button 
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-2.5 top-2.5 cursor-pointer focus:outline-none transition-colors duration-200 hover:text-teal-700"
-              style={{ color: '#129990' }}
+              style={toggleBtnStyle}
+              onClick={handleRegisterClick}
             >
-              {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+              Sign Up
+            </button>
+          </div>
+
+          <div 
+            className="toggle-panel-mobile toggle-right-mobile"
+            style={togglePanelRightStyle}
+          >
+            <h1 className='text-4xl'>Welcome Back!</h1>
+            <p style={{ fontSize: '14.5px', margin: '15px 0', marginBottom: '20px' }}>
+              Already have an account?
+            </p>
+            <button 
+              style={toggleBtnStyle}
+              onClick={handleLoginClick}
+            >
+              Sign In
             </button>
           </div>
         </div>
-
-        <button className="w-full text-white font-medium py-2 px-4 rounded-full transition duration-200 text-sm shadow-lg hover:shadow-xl" 
-          style={{ 
-            background: 'linear-gradient(to right, #129990, #096B68)',
-            boxShadow: '0 4px 14px rgba(18, 153, 144, 0.4)'
-          }}>
-          LOGIN
-        </button>
-
-        <div className="flex justify-between text-xs mt-4">
-          <div className="flex items-center" style={{ color: '#90D1CA' }}>
-            <input type="checkbox" className="mr-1 h-3 w-3" id="remember" />
-            <label htmlFor="remember">Remember me</label>
-          </div>
-          <div>
-            <a href="#" style={{ color: '#90D1CA' }} className="hover:text-white">Forgot password?</a>
-          </div>
-        </div>
       </div>
-
-      {/* Right side - Welcome Message */}
-      <div className="w-3/4 relative overflow-hidden" style={{ 
-        background: 'linear-gradient(135deg, #FFFBDE 0%, #90D1CA 100%)' 
-      }}>
-        <nav className="absolute top-0 w-full p-6 flex justify-between items-center z-20">
-          {/* Logo on the left */}
-          <div className="flex items-center">
-            <div style={{ color: '#129990' }} className="flex items-center">
-              <div style={{ color: '#096B68' }} className="font-bold text-xl">IT</div>
-              <div className="ml-1 font-bold">
-                <div className="text-lg tracking-wider">Ventory</div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Navigation on the right */}
-          <div className="flex gap-8 text-sm">
-            <a href="#" className="hover:text-teal-800" style={{ color: '#129990' }}>CATEGORY</a>
-            <a href="#" className="hover:text-teal-800" style={{ color: '#129990' }}>ITEM</a>
-            <a href="#" className="hover:text-teal-800" style={{ color: '#129990' }}>LOAN</a>
-            <a href="#" className="hover:text-teal-800" style={{ color: '#129990' }}>DETAILS</a>
-            <a href="#" className="text-white px-4 py-1 rounded-full ml-2 shadow-md hover:shadow-lg transition-all duration-200" 
-              style={{ 
-                background: 'linear-gradient(to right, #129990, #096B68)',
-                boxShadow: '0 2px 8px rgba(18, 153, 144, 0.4)'
-              }}>SIGN UP</a>
-          </div>
-        </nav>
-        
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-full h-full opacity-50">
-            <div className="w-96 h-96 rounded-full filter blur-3xl absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-40 animate-blob"
-              style={{ background: 'radial-gradient(circle, #129990 0%, #90D1CA 50%, transparent 90%)' }}></div>
-            <div className="w-64 h-64 rounded-full filter blur-2xl absolute top-1/3 left-2/3 transform -translate-x-1/2 -translate-y-1/2 opacity-30 animate-blob animation-delay-2000"
-              style={{ background: 'radial-gradient(circle, #096B68 0%, #129990 60%, transparent 90%)' }}></div>
-            <div className="w-72 h-72 rounded-full filter blur-2xl absolute top-2/3 left-1/3 transform -translate-x-1/2 -translate-y-1/2 opacity-30 animate-blob animation-delay-4000"
-              style={{ background: 'radial-gradient(circle, #FFFBDE 10%, #90D1CA 60%, transparent 90%)' }}></div>
-          </div>
-        </div>
-        
-        <div className="relative z-10 h-full flex items-center p-16">
-          <div style={{ color: '#096B68' }}>
-            <h1 className="text-6xl font-bold mb-6">Welcome.</h1>
-            <p className="text-base mb-10 max-w-md" style={{ color: '#129990' }}>
-              DESKRIPSI.
-            </p>
-            <div className="text-sm" style={{ color: '#129990' }}>
-              Not a member? <a href="#" style={{ color: '#096B68' }} className="underline">Sign up now</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </>
   );
-}
+};
+
+export default LoginPage;
