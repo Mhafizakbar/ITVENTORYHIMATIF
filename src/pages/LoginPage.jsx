@@ -3,6 +3,19 @@ import React, { useEffect, useState } from 'react';
 const LoginPage = () => {
   const [isActive, setIsActive] = useState(false);
 
+  // Login form states
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  
+  // Register form states
+  const [registerName, setRegisterName] = useState('');
+  const [registerEmail, setRegisterEmail] = useState('');
+  const [registerPhone, setRegisterPhone] = useState('');
+  const [registerPassword, setRegisterPassword] = useState('');
+
+  const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     // Add Google Fonts link to head
     const link = document.createElement('link');
@@ -23,11 +36,79 @@ const LoginPage = () => {
   }, []);
 
   const handleRegisterClick = () => {
+    setErrorMessage('');
     setIsActive(true);
   };
 
   const handleLoginClick = () => {
+    setErrorMessage('');
     setIsActive(false);
+  };
+
+  // Handle Login Submit
+  const handleLoginSubmit = () => {
+    setLoading(true);
+    setErrorMessage('');
+
+    fetch('https://pweb-be-production.up.railway.app/user/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: loginEmail,
+        password: loginPassword,
+      }),
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Login failed');
+        return res.json();
+      })
+      .then(data => {
+        setLoading(false);
+        console.log('Login success:', data);
+        alert('Login berhasil!');
+        // Here you can store the token or redirect the user
+        // For example: localStorage.setItem('token', data.token);
+      })
+      .catch(err => {
+        setLoading(false);
+        setErrorMessage('Email atau password salah.');
+      });
+  };
+
+  // Handle Register Submit
+  const handleRegisterSubmit = () => {
+    setLoading(true);
+    setErrorMessage('');
+
+    fetch('https://pweb-be-production.up.railway.app/user/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+      nama_lengkap: registerName,  
+      email: registerEmail,
+      no_telepon: registerPhone,  
+      password: registerPassword,
+})
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Register failed');
+        return res.json();
+      })
+      .then(data => {
+        setLoading(false);
+        console.log('Register success:', data);
+        alert('Registrasi berhasil! Silakan login.');
+        setIsActive(false); // switch to login after successful registration
+        // reset register form
+        setRegisterName('');
+        setRegisterEmail('');
+        setRegisterPhone('');
+        setRegisterPassword('');
+      })
+      .catch(err => {
+        setLoading(false);
+        setErrorMessage('Registrasi gagal. Pastikan data yang dimasukkan valid.');
+      });
   };
 
   const containerStyle = {
@@ -199,7 +280,7 @@ const LoginPage = () => {
           fontFamily: '"Poppins", sans-serif',
           textDecoration: 'none',
           listStyle: 'none',
-          background: "url('bg.jpeg') no-repeat center center/cover"
+          background: "url('fixbg.jpg') no-repeat center center/cover"
         }}
       >
         <div 
@@ -213,12 +294,17 @@ const LoginPage = () => {
           >
             <div className="w-full">
               <h1 style={{ fontSize: '36px', margin: '-10px 0' }}>Sign In</h1>
+              {errorMessage && !isActive && (
+                <p style={{ color: 'red', marginBottom: '10px' }}>{errorMessage}</p>
+              )}
               <div style={{ position: 'relative', margin: '30px 0' }}>
                 <input 
                   type="email" 
                   placeholder="Email" 
                   required 
                   style={inputStyle}
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
                 />
                 <i 
                   className="bx bxs-envelope"
@@ -237,6 +323,8 @@ const LoginPage = () => {
                   placeholder="Password" 
                   required 
                   style={inputStyle}
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
                 />
                 <i 
                   className="bx bxs-lock-alt"
@@ -257,7 +345,14 @@ const LoginPage = () => {
                   Forgot Password?
                 </a>
               </div>
-              <button type="button" style={btnStyle}>Sign In</button>
+              <button 
+                type="button" 
+                style={btnStyle}
+                onClick={handleLoginSubmit}
+                disabled={loading}
+              >
+                {loading ? 'Loading...' : 'Sign In'}
+              </button>
             </div>
           </div>
 
@@ -268,12 +363,17 @@ const LoginPage = () => {
           >
             <div className="w-full">
               <h1 style={{ fontSize: '36px', margin: '-10px 0' }}>Sign Up</h1>
+              {errorMessage && isActive && (
+                <p style={{ color: 'red', marginBottom: '10px' }}>{errorMessage}</p>
+              )}
               <div style={{ position: 'relative', margin: '30px 0' }}>
                 <input 
                   type="text" 
                   placeholder="Full Name" 
                   required 
                   style={inputStyle}
+                  value={registerName}
+                  onChange={(e) => setRegisterName(e.target.value)}
                 />
                 <i 
                   className="bx bxs-user"
@@ -292,6 +392,8 @@ const LoginPage = () => {
                   placeholder="Email" 
                   required 
                   style={inputStyle}
+                  value={registerEmail}
+                  onChange={(e) => setRegisterEmail(e.target.value)}
                 />
                 <i 
                   className="bx bxs-envelope"
@@ -310,6 +412,8 @@ const LoginPage = () => {
                   placeholder="Phone Number" 
                   required 
                   style={inputStyle}
+                  value={registerPhone}
+                  onChange={(e) => setRegisterPhone(e.target.value)}
                 />
                 <i 
                   className="bx bxs-phone"
@@ -328,6 +432,8 @@ const LoginPage = () => {
                   placeholder="Password" 
                   required 
                   style={inputStyle}
+                  value={registerPassword}
+                  onChange={(e) => setRegisterPassword(e.target.value)}
                 />
                 <i 
                   className="bx bxs-lock-alt"
@@ -340,7 +446,14 @@ const LoginPage = () => {
                   }}
                 ></i>
               </div>
-              <button type="button" style={btnStyle}>Sign Up</button>
+              <button 
+                type="button" 
+                style={btnStyle}
+                onClick={handleRegisterSubmit}
+                disabled={loading}
+              >
+                {loading ? 'Loading...' : 'Sign Up'}
+              </button>
             </div>
           </div>
 
@@ -368,6 +481,7 @@ const LoginPage = () => {
             <button 
               style={toggleBtnStyle}
               onClick={handleRegisterClick}
+              disabled={loading}
             >
               Sign Up
             </button>
@@ -384,6 +498,7 @@ const LoginPage = () => {
             <button 
               style={toggleBtnStyle}
               onClick={handleLoginClick}
+              disabled={loading}
             >
               Sign In
             </button>
