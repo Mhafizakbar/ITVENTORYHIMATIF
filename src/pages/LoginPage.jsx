@@ -199,7 +199,7 @@ const LoginPage = () => {
           fontFamily: '"Poppins", sans-serif',
           textDecoration: 'none',
           listStyle: 'none',
-          background: "url('bg.jpeg') no-repeat center center/cover"
+          background: "url('fixbg.jpg') no-repeat center center/cover"
         }}
       >
         <div 
