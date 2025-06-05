@@ -12,11 +12,11 @@ const Barang = () => {
     {
       id: 1,
       name: "Audio",
-      description: "Suara jernih untuk setiap kesempatan.",
+      description: "Temukan berbagai peralatan audio berkualitas untuk kebutuhan Anda.",
       icon: AudioLines,
       image: "G1.png", // Ganti dengan path gambar Anda
-      bgColor: "bg-orange-400",
-      iconColor: "text-orange-600",
+      bgColor: "bg-[#096B68]",
+      iconColor: "text-[#096B68]",
       items: [
         { id: 1, name: "TOA Speaker", available: true },
         { id: 2, name: "Speaker", available: true },
@@ -29,8 +29,8 @@ const Barang = () => {
       description: "Perabot penunjang kegiatan, dari rapat hingga acara besar.",
       icon: ShoppingBag,
       image: "G2.png", // Ganti dengan path gambar Anda
-      bgColor: "bg-slate-600",
-      iconColor: "text-slate-700",
+      bgColor: "bg-[#90D1CA]",
+      iconColor: "text-[#90D1CA]",
       items: [
         { id: 1, name: "Laptop Asus ROG", available: true },
         { id: 2, name: "Karpet", available: false },
@@ -42,8 +42,8 @@ const Barang = () => {
       description: "Pelengkap praktis untuk dokumentasi dan acara.",
       icon: Sparkles,
       image: "G3.png", // Ganti dengan path gambar Anda
-      bgColor: "bg-rose-300",
-      iconColor: "text-rose-600",
+      bgColor: "bg-[#FFD586]",
+      iconColor: "text-[#FFD586]",
       items: [
         { id: 1, name: "Tripod", available: true },
         { id: 2, name: "Baterai Mic", available: true },
@@ -387,8 +387,8 @@ const Barang = () => {
             {/* Bottom decorative elements */}
             <div className="mt-20 flex justify-center space-x-4 fade-in-up-delay-3">
               <div className="w-2 h-2 bg-[#096B68] rounded-full opacity-60 pulse-dot"></div>
-              <div className="w-2 h-2 bg-slate-600 rounded-full opacity-60 pulse-dot" style={{animationDelay: '0.5s'}}></div>
-              <div className="w-2 h-2 bg-rose-400 rounded-full opacity-60 pulse-dot" style={{animationDelay: '1s'}}></div>
+              <div className="w-2 h-2 bg-[#90D1CA] rounded-full opacity-60 pulse-dot" style={{animationDelay: '0.5s'}}></div>
+              <div className="w-2 h-2 bg-[#FFD586] rounded-full opacity-60 pulse-dot" style={{animationDelay: '1s'}}></div>
             </div>
           </div>
         </div>

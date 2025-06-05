@@ -212,10 +212,10 @@ const Navbar = () => {
                   <Link
                     key={link.to}
                     to={link.to}
-                    className={`relative px-4 py-2 text-sm font-medium transition-all duration-300 transform border-2 rounded-full overflow-hidden ${
+                    className={`relative px-3 py-1 text-sm font-medium transition-all duration-300 transform border-2 rounded-full overflow-hidden ${
                       isActiveRoute(link.to)
                         ? 'text-[#003d39] bg-gradient-to-b from-[#E8E4BB] to-[#D4D0A7] border-[#7DD3C0] shadow-lg scale-105 font-bold floating-effect border-dance'
-                        : 'text-[#003d39] border-transparent hover:text-[#096b68] hover:bg-gradient-to-r hover:from-[#7DD3C0] hover:to-[#4ECDC4] hover:scale-105 hover:shadow-lg hover:border-[#FFFBDE]'
+                        : 'text-[#B4EBE6] border-transparent hover:text-[#096b68] hover:bg-gradient-to-r hover:from-[#7DD3C0] hover:to-[#4ECDC4] hover:scale-105 hover:shadow-lg hover:border-[#FFFBDE]'
                     }`}
                     style={isActiveRoute(link.to) ? {
                       textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
