@@ -1,192 +1,187 @@
-import React from 'react';
-import Navbar from '../components/Navbar';
+import React, { useState, useEffect } from 'react';
+import { Menu, X, User, LogOut } from 'lucide-react';
 
-const HomePage = () => {
+const Navbar = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [currentPath, setCurrentPath] = useState('/home'); // Mock current path
+
+  // Mock Link component for demonstration
+  const Link = ({ to, children, className, onClick }) => (
+    <a 
+      href="#"
+      onClick={(e) => {
+        e.preventDefault();
+        setCurrentPath(to);
+        if (onClick) onClick();
+      }}
+      className={className}
+    >
+      {children}
+    </a>
+  );
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [currentPath]);
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isMobileMenuOpen && !event.target.closest('.navbar-container')) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMobileMenuOpen]);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
+  // Check if current route is active
+  const isActiveRoute = (path) => {
+    return currentPath === path;
+  };
+
+  const navLinks = [
+    { to: '/home', label: 'Home' },
+    { to: '/item', label: 'Item' },
+    { to: '/loan', label: 'Loan' },
+    { to: '/details', label: 'Details' }
+  ];
+
+  // Hamburger menu items dengan icon
+  const hamburgerMenuItems = [
+    { 
+      to: '/profile', 
+      label: 'Profile', 
+      icon: User,
+      onClick: () => {
+        console.log('Navigate to Profile');
+        closeMobileMenu();
+      }
+    },
+    { 
+      to: '/signout', 
+      label: 'Sign Out', 
+      icon: LogOut,
+      onClick: () => {
+        console.log('Sign Out clicked');
+        // Add your sign out logic here
+        closeMobileMenu();
+      }
+    }
+  ];
+
   return (
-    <div className="min-h-screen" style={{backgroundColor: '#f2faf9'}}>
-      <Navbar />
-      <div className="px-6 py-12">
-      {/* Hero Section */}
-      <div className="max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
-          {/* Left Content */}
-          <div className="space-y-8 animate-fade-in-up">
-            <h1 className="text-6xl lg:text-7xl font-bold text-gray-900 leading-tight">
-              Peminjaman
-              <br />
-              <span className="text-[#90D1CA]">Inventaris</span>
-              <br />
-              HIMATIF
-            </h1>
-            
-            <div className="space-y-4 text-gray-600">
-              <div className="flex items-center space-x-4">
-                <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
-                <span className="font-medium">VISITING HOURS</span>
-                <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
-                <span className="font-medium">ADDRESS</span>
-              </div>
-              
-              <div className="flex items-center space-x-4 text-sm">
-                <span>Sat-Sun 12pm-6pm</span>
-                <span className="text-gray-400">|</span>
-                <span>3202 Cherokee St.</span>
-              </div>
-              
-              <div className="flex items-center space-x-4 text-sm">
-                <span>Or by appointment</span>
-                <span className="text-gray-400">|</span>
-                <span>St. Louis, MO 63118</span>
-              </div>
-            </div>
+    <nav className="bg-[#096b68] shadow-md relative navbar-container">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center h-16">
+          {/* Brand Name */}
+          <div className="flex-shrink-0">
+            <Link 
+              to="/" 
+              className="text-2xl font-bold text-[#004d49] hover:text-[#00695c] transition-colors duration-200"
+            >
+              <span className="text-[#90D1CA]">IT</span>
+              <span className="text-[#FFFBDE]">Ventory</span>
+            </Link>
           </div>
+          
+          {/* Right Side Container - Desktop Menu + Hamburger */}
+          <div className="flex items-center space-x-4">
+            {/* Desktop Menu */}
+            <div className="hidden lg:flex space-x-4">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`relative px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
+                    isActiveRoute(link.to)
+                      ? 'text-[#2d7873] bg-gradient-to-b from-[#b2dfdb] to-[#a3d6c7] border-2 border-[#80cbc4] shadow-lg transform scale-105'
+                      : 'text-[#FFFFFF] hover:text-[#004d49] hover:bg-[#a3d6c7] hover:scale-105'
+                  }`}
+                  style={isActiveRoute(link.to) ? {
+                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(128, 203, 196, 0.3)'
+                  } : {}}
+                >
+                  {link.label}
+                  {/* Enhanced bottom border with gradient effect */}
+                  {isActiveRoute(link.to) && (
+                    <>
+                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#26a69a] via-[#00897b] to-[#26a69a] rounded-b-md"></div>
+                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-3/4 h-0.5 bg-gradient-to-r from-transparent via-[#ffffff80] to-transparent"></div>
+                    </>
+                  )}
+                </Link>
+              ))}
+            </div>
 
-          <div className="relative flex justify-center lg:justify-end">
-            <div className="relative animate-float">
-              <div className="absolute inset-0 w-80 h-80 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-full transform rotate-12 animate-pulse-slow"></div>
-              <div className="relative w-80 h-80 bg-gradient-to-br from-yellow-200 to-orange-300 rounded-full overflow-hidden transform -rotate-6 hover:rotate-0 transition-transform duration-700 shadow-2xl">
-                <img 
-                  src="inv.jpg"
-                  alt="Inventaris"
-                  className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
-                />
-              </div>
-              
-              {/* Decorative Elements */}
-              <div className="absolute -top-4 -right-4 w-8 h-8 bg-pink-300 rounded-full animate-bounce delay-300"></div>
-              <div className="absolute -bottom-6 -left-6 w-6 h-6 bg-blue-300 rounded-full animate-bounce delay-500"></div>
+            {/* Hamburger Button */}
+            <div className="flex">
+              <button
+                onClick={toggleMobileMenu}
+                className="inline-flex items-center justify-center p-2 rounded-md text-white hover:text-gray-200 hover:bg-[#0a7a77] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#00796b] transition-colors duration-200"
+                aria-expanded={isMobileMenuOpen}
+              >
+                <span className="sr-only">Toggle menu</span>
+                {isMobileMenuOpen ? (
+                  <X className="w-6 h-6 text-white" />
+                ) : (
+                  <Menu className="w-6 h-6 text-white" />
+                )}
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Action Cards */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {/* Barang Tersedia Card */}
-          <div className="group bg-white rounded-3xl p-10 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 animate-slide-up delay-100">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-8 group-hover:bg-green-200 transition-colors duration-300">
-              <div className="w-10 h-10 bg-green-400 rounded-full animate-pulse flex items-center justify-center">
-                <span className="text-white font-bold text-sm">✓</span>
-              </div>
-            </div>
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">Barang Tersedia</h3>
-            <p className="text-gray-600 group-hover:text-gray-800 transition-colors duration-300 text-lg">
-              Informasi barang yang tersedia untuk dipinjam
-            </p>
-            <div className="mt-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <div className="w-full h-1 bg-gradient-to-r from-green-400 to-green-600 rounded-full"></div>
-            </div>
-          </div>
-
-          {/* Barang Dipinjam Card */}
-          <div className="group bg-white rounded-3xl p-10 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 animate-slide-up delay-200">
-            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mb-8 group-hover:bg-yellow-200 transition-colors duration-300">
-              <div className="w-10 h-10 bg-yellow-400 rounded-full animate-pulse flex items-center justify-center">
-                <span className="text-white font-bold text-sm">⏳</span>
-              </div>
-            </div>
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">Sedang Dipinjam</h3>
-            <p className="text-gray-600 group-hover:text-gray-800 transition-colors duration-300 text-lg">
-              Barang yang sedang dalam masa peminjaman
-            </p>
-            <div className="mt-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <div className="w-full h-1 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full"></div>
-            </div>
-          </div>
-
-          {/* Barang Tidak Tersedia Card */}
-          <div className="group bg-white rounded-3xl p-10 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 animate-slide-up delay-300">
-            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-8 group-hover:bg-red-200 transition-colors duration-300">
-              <div className="w-10 h-10 bg-red-400 rounded-full animate-pulse flex items-center justify-center">
-                <span className="text-white font-bold text-sm">✗</span>
-              </div>
-            </div>
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">Tidak Tersedia</h3>
-            <p className="text-gray-600 group-hover:text-gray-800 transition-colors duration-300 text-lg">
-              Barang yang tidak tersedia atau rusak
-            </p>
-            <div className="mt-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <div className="w-full h-1 bg-gradient-to-r from-red-400 to-red-600 rounded-full"></div>
-            </div>
+        {/* Mobile/Hamburger Menu - Updated dengan Profile dan Sign Out */}
+        <div
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            isMobileMenuOpen ? 'max-h-32 opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className="px-2 pt-2 pb-3 space-y-1 bg-[#096b68] border-t border-[#b2dfdb]">
+            {hamburgerMenuItems.map((item) => {
+              const IconComponent = item.icon;
+              const isSignOut = item.label === 'Sign Out';
+              return (
+                <button
+                  key={item.to}
+                  onClick={item.onClick}
+                  className={`w-full flex items-center px-3 py-2 rounded-md text-base font-medium transition-all duration-200 text-left ${
+                    isSignOut 
+                      ? 'text-orange-300 hover:text-orange-200 hover:bg-[#0a7a77]' 
+                      : 'text-white hover:text-gray-200 hover:bg-[#0a7a77]'
+                  }`}
+                >
+                  <IconComponent className={`w-5 h-5 mr-3 ${isSignOut ? 'text-orange-300' : 'text-white'}`} />
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes fade-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(50px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes float {
-          0%, 100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
-        }
-
-        @keyframes pulse-slow {
-          0%, 100% {
-            opacity: 0.8;
-          }
-          50% {
-            opacity: 0.4;
-          }
-        }
-
-        .animate-fade-in-up {
-          animation: fade-in-up 0.8s ease-out;
-        }
-
-        .animate-slide-up {
-          animation: slide-up 0.6s ease-out both;
-        }
-
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
-        }
-
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
-
-        .delay-100 {
-          animation-delay: 0.1s;
-        }
-
-        .delay-200 {
-          animation-delay: 0.2s;
-        }
-
-        .delay-300 {
-          animation-delay: 0.3s;
-        }
-
-        .delay-500 {
-          animation-delay: 0.5s;
-        }
-      `}</style>
-    </div>
-    </div>
+      {/* Mobile Menu Backdrop - Changed to white blur */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-white bg-opacity-50 backdrop-blur-sm z-[-1]"
+          onClick={closeMobileMenu}
+        ></div>
+      )}
+    </nav>
   );
 };
 
-export default HomePage;
+export default Navbar;
