@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 
 const LoginPage = () => {
   const [isActive, setIsActive] = useState(false);
@@ -15,6 +17,8 @@ const LoginPage = () => {
 
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Add Google Fonts link to head
@@ -66,8 +70,8 @@ const LoginPage = () => {
         setLoading(false);
         console.log('Login success:', data);
         alert('Login berhasil!');
-        // Here you can store the token or redirect the user
-        // For example: localStorage.setItem('token', data.token);
+        
+        navigate('/home');
       })
       .catch(err => {
         setLoading(false);
