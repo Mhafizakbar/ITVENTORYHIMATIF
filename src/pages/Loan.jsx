@@ -391,30 +391,30 @@ const Loan = () => {
 
           {/* Daftar Barang yang Dipinjam */}
           {formData.barangDipinjam.length > 0 && (
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-8 rounded-2xl border-l-4 border-green-500 shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in-up delay-400">
-              <h3 className="text-xl font-semibold text-gray-700 mb-6 flex items-center">
-                📦 <span className="ml-2 text-green-600">Barang yang Dipinjam ({formData.barangDipinjam.length} item)</span>
+            <div className="bg-[#FFFBDE] p-8 rounded-2xl border-l-4 border-[#096B68] shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in-up delay-400">
+              <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+                📦 <span className="ml-2 text-[#096B68]">Barang yang Dipinjam ({formData.barangDipinjam.length} item)</span>
               </h3>
               
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse border-2 border-gray-300 rounded-2xl overflow-hidden shadow-lg">
+                <table className="w-full border-collapse border-2 border-[#096B68] rounded-2xl overflow-hidden shadow-lg">
                   <thead>
-                    <tr className="bg-gradient-to-r from-gray-100 to-gray-200">
-                      <th className="border border-gray-300 px-6 py-4 text-left font-bold text-gray-700">No</th>
-                      <th className="border border-gray-300 px-6 py-4 text-left font-bold text-gray-700">Nama Barang</th>
-                      <th className="border border-gray-300 px-6 py-4 text-left font-bold text-gray-700">Jumlah</th>
-                      <th className="border border-gray-300 px-6 py-4 text-left font-bold text-gray-700">Keterangan</th>
-                      <th className="border border-gray-300 px-6 py-4 text-left font-bold text-gray-700">Aksi</th>
+                    <tr className="bg-[#096B68]">
+                      <th className="border border-[#096B68] px-6 py-4 text-left font-bold text-white">No</th>
+                      <th className="border border-[#096B68] px-6 py-4 text-left font-bold text-white">Nama Barang</th>
+                      <th className="border border-[#096B68] px-6 py-4 text-left font-bold text-white">Jumlah</th>
+                      <th className="border border-[#096B68] px-6 py-4 text-left font-bold text-white">Keterangan</th>
+                      <th className="border border-[#096B68] px-6 py-4 text-left font-bold text-white">Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
                     {formData.barangDipinjam.map((barang, index) => (
-                      <tr key={barang.id} className="hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 transition-all duration-300 transform hover:scale-[1.02]">
-                        <td className="border border-gray-300 px-6 py-4 font-medium">{index + 1}</td>
-                        <td className="border border-gray-300 px-6 py-4 font-bold text-gray-800">{barang.namaBarang}</td>
-                        <td className="border border-gray-300 px-6 py-4">{barang.jumlah}</td>
-                        <td className="border border-gray-300 px-6 py-4 text-gray-600">{barang.keterangan || '-'}</td>
-                        <td className="border border-gray-300 px-6 py-4">
+                      <tr key={barang.id} className="bg-gradient-to-r from-green-50 to-emerald-50 transition-all duration-300">
+                        <td className="border border-[#096B68] px-6 py-4 font-medium">{index + 1}</td>
+                        <td className="border border-[#096B68] px-6 py-4 font-bold text-gray-800">{barang.namaBarang}</td>
+                        <td className="border border-[#096B68] px-6 py-4">{barang.jumlah}</td>
+                        <td className="border border-[#096B68] px-6 py-4 text-gray-600">{barang.keterangan || '-'}</td>
+                        <td className="border border-[#096B68] px-6 py-4">
                           <button
                             type="button"
                             onClick={() => hapusBarang(barang.id)}
