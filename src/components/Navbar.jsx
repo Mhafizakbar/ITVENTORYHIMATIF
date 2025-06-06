@@ -72,7 +72,7 @@ const Navbar = () => {
   return (
     <>
       {/* Custom CSS Animations */}
-      <style jsx>{`
+      <style >{`
         @keyframes shimmer-wave {
           0% {
             background-position: -200% 0;
