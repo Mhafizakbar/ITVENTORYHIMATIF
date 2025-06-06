@@ -1,29 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, User, LogOut } from 'lucide-react';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [currentPath, setCurrentPath] = useState('/home'); // Mock current path
-
-  // Mock Link component for demonstration
-  const Link = ({ to, children, className, onClick }) => (
-    <a 
-      href="#"
-      onClick={(e) => {
-        e.preventDefault();
-        setCurrentPath(to);
-        if (onClick) onClick();
-      }}
-      className={className}
-    >
-      {children}
-    </a>
-  );
+  const location = useLocation();
 
   // Close mobile menu when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, [currentPath]);
+  }, [location.pathname]);
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -49,12 +35,13 @@ const Navbar = () => {
 
   // Check if current route is active
   const isActiveRoute = (path) => {
-    return currentPath === path;
+    return location.pathname === path;
   };
 
+  // Navigation links - Item mengarah ke /barang
   const navLinks = [
     { to: '/home', label: 'Home' },
-    { to: '/item', label: 'Item' },
+    { to: '/barang', label: 'Item' },
     { to: '/loan', label: 'Loan' },
     { to: '/details', label: 'Details' }
   ];
@@ -83,104 +70,244 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="bg-[#096b68] shadow-md relative navbar-container">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          {/* Brand Name */}
-          <div className="flex-shrink-0">
-            <Link 
-              to="/" 
-              className="text-2xl font-bold text-[#004d49] hover:text-[#00695c] transition-colors duration-200"
-            >
-              <span className="text-[#90D1CA]">IT</span>
-              <span className="text-[#FFFBDE]">Ventory</span>
-            </Link>
-          </div>
-          
-          {/* Right Side Container - Desktop Menu + Hamburger */}
-          <div className="flex items-center space-x-4">
-            {/* Desktop Menu */}
-            <div className="hidden lg:flex space-x-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className={`relative px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
-                    isActiveRoute(link.to)
-                      ? 'text-[#2d7873] bg-gradient-to-b from-[#b2dfdb] to-[#a3d6c7] border-2 border-[#80cbc4] shadow-lg transform scale-105'
-                      : 'text-[#FFFFFF] hover:text-[#004d49] hover:bg-[#a3d6c7] hover:scale-105'
-                  }`}
-                  style={isActiveRoute(link.to) ? {
-                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(128, 203, 196, 0.3)'
-                  } : {}}
-                >
-                  {link.label}
-                  {/* Enhanced bottom border with gradient effect */}
-                  {isActiveRoute(link.to) && (
-                    <>
-                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#26a69a] via-[#00897b] to-[#26a69a] rounded-b-md"></div>
-                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-3/4 h-0.5 bg-gradient-to-r from-transparent via-[#ffffff80] to-transparent"></div>
-                    </>
-                  )}
-                </Link>
-              ))}
-            </div>
+    <>
+      {/* Custom CSS Animations */}
+      <style jsx>{`
+        @keyframes shimmer-wave {
+          0% {
+            background-position: -200% 0;
+            opacity: 0.6;
+          }
+          50% {
+            opacity: 1;
+          }
+          100% {
+            background-position: 200% 0;
+            opacity: 0.6;
+          }
+        }
+        
+        @keyframes glow-rotate {
+          0% {
+            box-shadow: 0 0 10px rgba(125, 211, 192, 0.4), 0 0 20px rgba(78, 205, 196, 0.3), 0 0 30px rgba(125, 211, 192, 0.2);
+            transform: rotate(0deg) scale(1);
+          }
+          25% {
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.5), 0 0 25px rgba(125, 211, 192, 0.4), 0 0 35px rgba(78, 205, 196, 0.3);
+          }
+          50% {
+            box-shadow: 0 0 20px rgba(125, 211, 192, 0.6), 0 0 30px rgba(78, 205, 196, 0.5), 0 0 40px rgba(125, 211, 192, 0.4);
+            transform: rotate(180deg) scale(1.02);
+          }
+          75% {
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.5), 0 0 25px rgba(125, 211, 192, 0.4), 0 0 35px rgba(78, 205, 196, 0.3);
+          }
+          100% {
+            box-shadow: 0 0 10px rgba(125, 211, 192, 0.4), 0 0 20px rgba(78, 205, 196, 0.3), 0 0 30px rgba(125, 211, 192, 0.2);
+            transform: rotate(360deg) scale(1);
+          }
+        }
+        
+        @keyframes color-shift {
+          0%, 100% { 
+            background: linear-gradient(45deg, #8aded8, #4ECDC4, #7DD3C0);
+          }
+          25% { 
+            background: linear-gradient(45deg, #4ECDC4, #7DD3C0, #8aded8);
+          }
+          50% { 
+            background: linear-gradient(45deg, #7DD3C0, #8aded8, #4ECDC4);
+          }
+          75% { 
+            background: linear-gradient(45deg, #8aded8, #7DD3C0, #4ECDC4);
+          }
+        }
+        
+        @keyframes floating {
+          0%, 100% {
+            transform: translateY(0) scale(1);
+          }
+          25% {
+            transform: translateY(-2px) scale(1.01);
+          }
+          50% {
+            transform: translateY(-4px) scale(1.02);
+          }
+          75% {
+            transform: translateY(-2px) scale(1.01);
+          }
+        }
+        
+        @keyframes border-dance {
+          0% {
+            border-color: #7DD3C0;
+            box-shadow: 0 0 0 0 rgba(125, 211, 192, 0.7);
+          }
+          25% {
+            border-color: #4ECDC4;
+            box-shadow: 0 0 0 4px rgba(78, 205, 196, 0.3);
+          }
+          50% {
+            border-color: #8aded8;
+            box-shadow: 0 0 0 8px rgba(138, 222, 216, 0.2);
+          }
+          75% {
+            border-color: #4ECDC4;
+            box-shadow: 0 0 0 4px rgba(78, 205, 196, 0.3);
+          }
+          100% {
+            border-color: #7DD3C0;
+            box-shadow: 0 0 0 0 rgba(125, 211, 192, 0.7);
+          }
+        }
+        
+        .shimmer-effect {
+          background: linear-gradient(
+            90deg,
+            rgba(125, 211, 192, 0.2) 0%,
+            rgba(78, 205, 196, 0.4) 50%,
+            rgba(125, 211, 192, 0.2) 100%
+          );
+          background-size: 200% 100%;
+          animation: shimmer-wave 2s ease-in-out infinite;
+        }
+        
+        .glow-rotate {
+          animation: glow-rotate 3s ease-in-out infinite;
+        }
+        
+        .color-shift {
+          background-size: 300% 300%;
+          animation: color-shift 4s ease-in-out infinite;
+        }
+        
+        .floating-effect {
+          animation: floating 3s ease-in-out infinite;
+        }
+        
+        .border-dance {
+          animation: border-dance 2.5s ease-in-out infinite;
+        }
+      `}</style>
 
-            {/* Hamburger Button */}
-            <div className="flex">
-              <button
-                onClick={toggleMobileMenu}
-                className="inline-flex items-center justify-center p-2 rounded-md text-white hover:text-gray-200 hover:bg-[#0a7a77] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#00796b] transition-colors duration-200"
-                aria-expanded={isMobileMenuOpen}
+      <nav className="bg-[#096b68] shadow-md relative navbar-container">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center h-16">
+            {/* Brand Name */}
+            <div className="flex-shrink-0">
+              <Link 
+                to="/" 
+                className="text-2xl font-bold text-[#004d49] hover:text-[#7DD3C0] transition-colors duration-300"
               >
-                <span className="sr-only">Toggle menu</span>
-                {isMobileMenuOpen ? (
-                  <X className="w-6 h-6 text-white" />
-                ) : (
-                  <Menu className="w-6 h-6 text-white" />
-                )}
-              </button>
+                <span className="text-[#90D1CA]">IT</span>
+                <span className="text-[#FFFBDE]">Ventory</span>
+              </Link>
+            </div>
+            
+            {/* Right Side Container - Desktop Menu + Hamburger */}
+            <div className="flex items-center space-x-4">
+              {/* Desktop Menu */}
+              <div className="hidden lg:flex space-x-4">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className={`relative px-3 py-1 text-sm font-medium transition-all duration-300 transform border-2 rounded-full overflow-hidden ${
+                      isActiveRoute(link.to)
+                        ? 'text-[#003d39] bg-gradient-to-b from-[#E8E4BB] to-[#D4D0A7] border-[#7DD3C0] shadow-lg scale-105 font-bold floating-effect border-dance'
+                        : 'text-[#B4EBE6] border-transparent hover:text-[#096b68] hover:bg-gradient-to-r hover:from-[#7DD3C0] hover:to-[#4ECDC4] hover:scale-105 hover:shadow-lg hover:border-[#FFFBDE]'
+                    }`}
+                    style={isActiveRoute(link.to) ? {
+                      textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
+                    } : {}}
+                  >
+                    {link.label}
+                    {/* Enhanced glow effects untuk active state */}
+                    {isActiveRoute(link.to) && (
+                      <>
+                        {/* Shimmer wave effect sebagai pengganti animate-pulse */}
+                        <div className="absolute top-0 left-0 right-0 bottom-0 shimmer-effect rounded-full"></div>
+                        
+                        {/* Floating color-shifting background */}
+                        <div className="absolute top-0.5 left-0.5 right-0.5 bottom-0.5 color-shift opacity-20 rounded-full"></div>
+                        
+
+                        
+                        {/* Subtle outer glow ring */}
+                        <div className="absolute -inset-1 bg-gradient-to-r from-[#7DD3C0] via-[#4ECDC4] to-[#7DD3C0] rounded-full opacity-30 blur-sm"></div>
+                      </>
+                    )}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Hamburger Button */}
+              <div className="flex">
+                <button
+                  onClick={toggleMobileMenu}
+                  className="inline-flex items-center justify-center p-2 rounded-full text-white hover:text-[#096b68] hover:bg-gradient-to-r from-[#7DD3C0] to-[#4ECDC4] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#7DD3C0] transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                  aria-expanded={isMobileMenuOpen}
+                >
+                  <span className="sr-only">Toggle menu</span>
+                  {isMobileMenuOpen ? (
+                    <X className="w-6 h-6 transition-transform duration-200 rotate-90" />
+                  ) : (
+                    <Menu className="w-6 h-6 transition-transform duration-200" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile/Hamburger Menu - Updated dengan Profile dan Sign Out */}
+          <div
+            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              isMobileMenuOpen ? 'max-h-32 opacity-100' : 'max-h-0 opacity-0'
+            }`}
+          >
+            <div className="px-2 pt-2 pb-3 space-y-1 bg-[#096b68] border-t border-[#7DD3C0]">
+              {hamburgerMenuItems.map((item) => {
+                const IconComponent = item.icon;
+                const isSignOut = item.label === 'Sign Out';
+                
+                if (isSignOut) {
+                  return (
+                    <button
+                      key={item.to}
+                      onClick={item.onClick}
+                      className="w-full flex items-center px-4 py-2 rounded-full text-base font-medium transition-all duration-300 text-left transform hover:scale-105 text-[#FFFBDE] hover:text-[#096b68] hover:bg-gradient-to-r from-[#FFD700] to-[#FFA500] hover:shadow-lg"
+                    >
+                      <IconComponent className="w-5 h-5 mr-3 transition-colors duration-300 text-[#FFFBDE]" />
+                      {item.label}
+                    </button>
+                  );
+                }
+                
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={closeMobileMenu}
+                    className="w-full flex items-center px-4 py-2 rounded-full text-base font-medium transition-all duration-300 text-left transform hover:scale-105 text-white hover:text-[#096b68] hover:bg-gradient-to-r from-[#7DD3C0] to-[#4ECDC4] hover:shadow-lg"
+                  >
+                    <IconComponent className="w-5 h-5 mr-3 transition-colors duration-300 text-white" />
+                    {item.label}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>
 
-        {/* Mobile/Hamburger Menu - Updated dengan Profile dan Sign Out */}
-        <div
-          className={`overflow-hidden transition-all duration-300 ease-in-out ${
-            isMobileMenuOpen ? 'max-h-32 opacity-100' : 'max-h-0 opacity-0'
-          }`}
-        >
-          <div className="px-2 pt-2 pb-3 space-y-1 bg-[#096b68] border-t border-[#b2dfdb]">
-            {hamburgerMenuItems.map((item) => {
-              const IconComponent = item.icon;
-              const isSignOut = item.label === 'Sign Out';
-              return (
-                <button
-                  key={item.to}
-                  onClick={item.onClick}
-                  className={`w-full flex items-center px-3 py-2 rounded-md text-base font-medium transition-all duration-200 text-left ${
-                    isSignOut 
-                      ? 'text-orange-300 hover:text-orange-200 hover:bg-[#0a7a77]' 
-                      : 'text-white hover:text-gray-200 hover:bg-[#0a7a77]'
-                  }`}
-                >
-                  <IconComponent className={`w-5 h-5 mr-3 ${isSignOut ? 'text-orange-300' : 'text-white'}`} />
-                  {item.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Menu Backdrop - Changed to white blur */}
-      {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-white bg-opacity-50 backdrop-blur-sm z-[-1]"
-          onClick={closeMobileMenu}
-        ></div>
-      )}
-    </nav>
+        {/* Mobile Menu Backdrop - Enhanced blur effect */}
+        {isMobileMenuOpen && (
+          <div 
+            className="fixed inset-0 bg-[#7DD3C0] bg-opacity-20 backdrop-blur-md z-[-1] transition-opacity duration-300"
+            onClick={closeMobileMenu}
+          ></div>
+        )}
+      </nav>
+    </>
   );
 };
 

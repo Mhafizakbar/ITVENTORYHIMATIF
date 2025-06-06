@@ -53,8 +53,8 @@ const HomePage = () => {
               </div>
               
               {/* Decorative Elements */}
-              <div className="absolute -top-4 -right-4 w-8 h-8 bg-pink-300 rounded-full animate-bounce delay-300"></div>
-              <div className="absolute -bottom-6 -left-6 w-6 h-6 bg-blue-300 rounded-full animate-bounce delay-500"></div>
+              <div className="absolute -top-4 -right-4 w-8 h-8 bg-[#096B68] rounded-full animate-bounce delay-300"></div>
+              <div className="absolute -bottom-6 -left-6 w-6 h-6 bg-[#90D1CA] rounded-full animate-bounce delay-500"></div>
             </div>
           </div>
         </div>
