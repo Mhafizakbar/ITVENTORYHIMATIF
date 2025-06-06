@@ -125,13 +125,6 @@ const Barang = () => {
     return itemsData.filter(item => item.id_kategori === categoryId);
   };
 
-  // Function to get quantity status color
-  const getQuantityColor = (jumlah) => {
-    if (jumlah === 0) return 'text-red-700 bg-red-100 border-red-200';
-    if (jumlah <= 5) return 'text-yellow-700 bg-yellow-100 border-yellow-200';
-    return 'text-green-700 bg-green-100 border-green-200';
-  };
-
   // Get current expanded category data
   const expandedCategoryData = expandedCategory ? categories.find(cat => cat.id === expandedCategory) : null;
   const expandedCategoryItems = expandedCategory ? getItemsByCategory(expandedCategory) : [];
@@ -142,7 +135,7 @@ const Barang = () => {
       <div 
         className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
         style={{ 
-          backgroundImage: 'url(/fixbg.jpg)', // Ganti dengan nama file background image Anda
+          backgroundImage: 'url(fixbg.jpg)',
           backgroundAttachment: 'fixed'
         }}
       >
@@ -344,6 +337,16 @@ const Barang = () => {
               transform: translateY(0) scale(1);
             }
           }
+
+          .quantity-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }
         `}</style>
 
         <Navbar />
@@ -444,16 +447,24 @@ const Barang = () => {
           {expandedCategory && (
             <div className={`expanded-card show w-full mt-8`}>
               <div className={`rounded-2xl p-8 shadow-2xl border-l-8 ${
-                expandedCategoryData.id === 1 ? 'border-[#096B68] bg-gradient-to-r from-emerald-50 via-white to-emerald-50' :
-                expandedCategoryData.id === 2 ? 'border-[#90D1CA] bg-gradient-to-r from-teal-50 via-white to-teal-50' :
-                'border-[#FFD586] bg-gradient-to-r from-yellow-50 via-white to-yellow-50'
+                expandedCategoryData.id === 1 ? 'border-[#096B68] bg-gradient-to-r from-[#90D1CA] via-white to-[#FFFBDE]' :
+                expandedCategoryData.id === 2 ? 'border-[#90D1CA] bg-gradient-to-r from-[#FFFBDE] via-white to-[#90D1CA]' :
+                'border-[#FFD586] bg-gradient-to-r from-[#90D1CA] via-white to-[#FFFBDE]'
               } backdrop-filter backdrop-blur-sm bg-opacity-95`}>
                 
                 {/* Header with category info */}
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center space-x-4">
-                    <div className={`p-3 rounded-full ${expandedCategoryData.bgColor} bg-opacity-20`}>
-                      <expandedCategoryData.icon className={`w-8 h-8 ${expandedCategoryData.iconColor}`} />
+                    <div className={`p-3 rounded-full ${
+                      expandedCategoryData.id === 1 ? 'bg-blue-100' :
+                      expandedCategoryData.id === 2 ? 'bg-blue-100' :
+                      'bg-orange-100'
+                    }`}>
+                      <expandedCategoryData.icon className={`w-8 h-8 ${
+                        expandedCategoryData.id === 1 ? 'text-[#096B68]' :
+                        expandedCategoryData.id === 2 ? 'text-[#90D1CA]' :
+                        'text-[#FFD586]'
+                      }`} />
                     </div>
                     <div>
                       <h4 className="text-3xl font-bold text-slate-800">
@@ -479,43 +490,48 @@ const Barang = () => {
                   {expandedCategoryItems.map((item, itemIndex) => (
                     <div 
                       key={item.id_barang} 
-                      className="bg-white rounded-xl p-6 shadow-lg border border-white border-opacity-50 transition-all duration-300 hover:shadow-xl hover:transform hover:scale-[1.02] item-slide-in"
+                      className={`bg-white rounded-xl p-6 shadow-lg border-2 transition-all duration-300 hover:shadow-xl hover:transform hover:scale-[1.02] item-slide-in ${
+                        expandedCategoryData.id === 1 ? 'border-[#096B68] hover:border-[#096B68]' :
+                        expandedCategoryData.id === 2 ? 'border-[#90D1CA] hover:border-[#90D1CA]' :
+                        'border-[#FFD586] hover:border-[#FFD586]'
+                      }`}
                       style={{animationDelay: `${itemIndex * 0.1}s`}}
                     >
                       {/* Item Layout */}
-                      <div className="flex items-center justify-between w-full">
-                        {/* Left Side - Item Info */}
-                        <div className="flex-1 pr-6">
-                          <div className="flex items-start justify-between mb-3">
-                            <h5 className="text-xl font-bold text-slate-800 leading-tight">
-                              {item.nama_barang}
-                            </h5>
-                            <div className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ml-4 whitespace-nowrap border ${getQuantityColor(item.jumlah)}`}>
-                              {item.jumlah > 0 ? `${item.jumlah} tersedia` : 'Habis'}
+                      <div className="w-full">
+                        <div className="flex items-start justify-between space-x-4">
+                          {/* Left side - Icon and Content */}
+                          <div className="flex items-start space-x-4 flex-1">
+                            {/* Item Icon */}
+                            <div className={`p-2 rounded-lg flex-shrink-0 ${
+                              expandedCategoryData.id === 1 ? 'bg-blue-50' :
+                              expandedCategoryData.id === 2 ? 'bg-blue-50' :
+                              'bg-blue-50'
+                            }`}>
+                              <Package className={`w-6 h-6 ${
+                                expandedCategoryData.id === 1 ? 'text-[#096B68]' :
+                                expandedCategoryData.id === 2 ? 'text-[#90D1CA]' :
+                                'text-[#FFD586]'
+                              }`} />
+                            </div>
+                            
+                            {/* Item Content */}
+                            <div className="flex-1">
+                              <h5 className="text-xl font-bold text-slate-800 leading-tight mb-2">
+                                {item.nama_barang}
+                              </h5>
+                              <p className="text-slate-700 text-sm leading-relaxed">
+                                {item.deskripsi}
+                              </p>
                             </div>
                           </div>
-                          <p className="text-slate-700 text-sm leading-relaxed">
-                            {item.deskripsi}
-                          </p>
-                        </div>
-                        
-                        {/* Right Side - Quantity Display */}
-                        <div className="flex items-center space-x-3 flex-shrink-0">
-                          <div className={`text-center rounded-lg p-4 shadow-lg border-2 min-w-[80px] ${
-                            expandedCategoryData.id === 1 ? 'bg-emerald-50 border-emerald-200' :
-                            expandedCategoryData.id === 2 ? 'bg-teal-50 border-teal-200' :
-                            'bg-yellow-50 border-yellow-200'
-                          }`}>
-                            <div className="text-3xl font-black text-slate-800">
-                              {item.jumlah}
-                            </div>
-                            <div className="text-xs text-slate-600 uppercase tracking-wider font-semibold">
-                              UNIT
+                          
+                          {/* Right side - Quantity Badge */}
+                          <div className="flex-shrink-0">
+                          <div className="bg-[#096B68] text-white text-sm px-2 py-1 rounded-full">
+                           {item.jumlah} unit{item.jumlah !== 1 ? 's' : ''}
                             </div>
                           </div>
-                          <div className={`w-4 h-4 rounded-full transition-all duration-200 shadow-lg flex-shrink-0 ${
-                            item.jumlah > 0 ? (item.jumlah <= 5 ? 'bg-yellow-500' : 'bg-green-500 pulse-dot') : 'bg-red-500'
-                          }`}></div>
                         </div>
                       </div>
                     </div>

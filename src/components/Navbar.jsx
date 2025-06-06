@@ -43,7 +43,7 @@ const Navbar = () => {
     { to: '/home', label: 'Home' },
     { to: '/barang', label: 'Item' },
     { to: '/loan', label: 'Loan' },
-    { to: '/details', label: 'Details' }
+    { to: '/detail', label: 'Details' }
   ];
 
   // Hamburger menu items dengan icon
@@ -275,9 +275,9 @@ const Navbar = () => {
                     <button
                       key={item.to}
                       onClick={item.onClick}
-                      className="w-full flex items-center px-4 py-2 rounded-full text-base font-medium transition-all duration-300 text-left transform hover:scale-105 text-[#FFFBDE] hover:text-[#096b68] hover:bg-gradient-to-r from-[#FFD700] to-[#FFA500] hover:shadow-lg"
+                      className="w-full flex items-center px-4 py-2 rounded-full text-base font-medium transition-all duration-300 text-left transform hover:scale-105 text-[#FFFBDE] hover:text-[#096b68] hover:bg-white hover:shadow-lg"
                     >
-                      <IconComponent className="w-5 h-5 mr-3 transition-colors duration-300 text-[#FFFBDE]" />
+                      <IconComponent className="w-5 h-5 mr-3 transition-colors duration-300 text-[#FFFBDE] hover:text-[#096b68]" />
                       {item.label}
                     </button>
                   );
@@ -298,14 +298,6 @@ const Navbar = () => {
             </div>
           </div>
         </div>
-
-        {/* Mobile Menu Backdrop - Enhanced blur effect */}
-        {isMobileMenuOpen && (
-          <div 
-            className="fixed inset-0 bg-[#7DD3C0] bg-opacity-20 backdrop-blur-md z-[-1] transition-opacity duration-300"
-            onClick={closeMobileMenu}
-          ></div>
-        )}
       </nav>
     </>
   );
