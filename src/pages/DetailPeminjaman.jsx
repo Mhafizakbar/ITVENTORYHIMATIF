@@ -1,48 +1,72 @@
-import React, { useState } from 'react';
-import { Calendar, Package, Clock, CheckCircle, XCircle, Search, Filter, AudioLines, ShoppingBag, Sparkles, TrendingUp, Activity } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Calendar, Package, Clock, CheckCircle, Search, Filter, AudioLines, ShoppingBag, Sparkles, TrendingUp, Activity } from 'lucide-react';
 import Navbar from '../components/Navbar';
 
 const DetailPeminjaman = () => {
-  // Data dummy untuk riwayat peminjaman
-  const [riwayatPeminjaman] = useState([
-    {
-      id: 1,
-      namaBarang: "Laptop ASUS ROG",
-      tanggalPinjam: "2024-05-15",
-      tanggalKembali: "2024-05-22",
-      status: "dikembalikan",
-      kategori: "Furniture"
-    },
-    {
-      id: 2,
-      namaBarang: "Microphone",
-      tanggalPinjam: "2024-05-20",
-      tanggalKembali: "2024-05-25",
-      status: "dipinjam",
-      kategori: "Audio"
-    },
-    {
-      id: 3,
-      namaBarang: "Baterai Mic",
-      tanggalPinjam: "2024-05-10",
-      tanggalKembali: "2024-05-17",
-      status: "dikembalikan",
-      kategori: "Aksesoris"
-    },
-  ]);
-
+  const [riwayatPeminjaman, setRiwayatPeminjaman] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('semua');
+  const navigate = useNavigate();
 
-  // Filter data berdasarkan pencarian dan status
+  useEffect(() => {
+    const fetchRiwayatPeminjaman = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch('https://pweb-be-production.up.railway.app/peminjaman', {
+          method: 'GET',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (response.status === 401) {
+          setError('Sesi tidak valid. Silakan login kembali.');
+          navigate('/login');
+          return;
+        }
+        if (!response.ok) {
+          throw new Error(`Gagal mengambil data: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('API Response:', data); // Debugging
+        const mappedData = data.flatMap(peminjaman =>
+      peminjaman.detail_peminjaman.map(detail => ({
+      id: `${peminjaman.id_peminjaman}-${detail.id_detail}`, // Gabungkan ID peminjaman dan detail
+      namaBarang: detail.barang.nama_barang,
+      tanggalPinjam: peminjaman.tanggal_pinjam,
+      tanggalKembali: peminjaman.tanggal_kembali,
+      status: peminjaman.status || 'dipinjam',
+      kategori: detail.barang.kategori || 'Lainnya'
+  }))
+);
+        console.log('Mapped Data:', mappedData); // Debugging
+        setRiwayatPeminjaman(mappedData);
+      } catch (err) {
+        console.error('Error fetching riwayat peminjaman:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRiwayatPeminjaman();
+  }, [navigate]);
+
   const filteredData = riwayatPeminjaman.filter(item => {
-    const matchesSearch = item.namaBarang.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (item.namaBarang || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'semua' || item.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
 
   const formatTanggal = (tanggal) => {
     const date = new Date(tanggal);
+    if (isNaN(date.getTime())) {
+      return 'Tanggal tidak valid';
+    }
     return date.toLocaleDateString('id-ID', {
       day: 'numeric',
       month: 'long',
@@ -50,7 +74,6 @@ const DetailPeminjaman = () => {
     });
   };
 
-  // Function to get category icon
   const getCategoryIcon = (kategori) => {
     switch (kategori) {
       case 'Audio':
@@ -72,43 +95,75 @@ const DetailPeminjaman = () => {
           Dikembalikan
         </span>
       );
-    } else {
-      return (
-        <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border border-yellow-200 shadow-sm">
-          <Clock className="w-4 h-4 mr-2" />
-          Dipinjam
-        </span>
-      );
     }
+    return (
+      <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border border-yellow-200 shadow-sm">
+        <Clock className="w-4 h-4 mr-2" />
+        Dipinjam
+      </span>
+    );
   };
 
-  const hitungTotalPeminjaman = () => {
-    return riwayatPeminjaman.length;
-  };
+  const hitungTotalPeminjaman = () => riwayatPeminjaman.length;
+  const hitungSedangDipinjam = () => riwayatPeminjaman.filter(item => item.status === 'dipinjam').length;
+  const hitungDikembalikan = () => riwayatPeminjaman.filter(item => item.status === 'dikembalikan').length;
 
-  const hitungSedangDipinjam = () => {
-    return riwayatPeminjaman.filter(item => item.status === 'dipinjam').length;
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen relative">
+        <div 
+          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: 'url(/fixbg.jpg)', backgroundAttachment: 'fixed' }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/85 to-blue-50/90 backdrop-blur-sm"></div>
+        </div>
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-[#096B68] border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-lg text-slate-600">Memuat riwayat peminjaman...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const hitungDikembalikan = () => {
-    return riwayatPeminjaman.filter(item => item.status === 'dikembalikan').length;
-  };
+  if (error) {
+    return (
+      <div className="min-h-screen relative">
+        <div 
+          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: 'url(/fixbg.jpg)', backgroundAttachment: 'fixed' }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/85 to-blue-50/90 backdrop-blur-sm"></div>
+        </div>
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="text-center max-w-md p-8 bg-white/95 rounded-2xl shadow-xl">
+            <div className="w-24 h-24 mx-auto mb-8 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center">
+              <Package className="w-12 h-12 text-red-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-800 mb-4">Terjadi Kesalahan</h3>
+            <p className="text-slate-600 mb-6">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-2 bg-[#096B68] text-white rounded-lg hover:bg-[#085854] transition-colors"
+            >
+              Coba Lagi
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative">
-      {/* Background Image */}
       <div 
         className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
-        style={{ 
-          backgroundImage: 'url(/fixbg.jpg)',
-          backgroundAttachment: 'fixed'
-        }}
+        style={{ backgroundImage: 'url(/fixbg.jpg)', backgroundAttachment: 'fixed' }}
       >
-        {/* Overlay untuk memastikan konten tetap terbaca */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/85 to-blue-50/90 backdrop-blur-sm"></div>
       </div>
 
-      {/* Content */}
       <div className="relative z-10">
         <style jsx>{`
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -199,7 +254,6 @@ const DetailPeminjaman = () => {
           }
         `}</style>
 
-        {/* Header */}
         <div className="backdrop-filter backdrop-blur-lg bg-white/90 shadow-xl border-b border-white/20">
           <Navbar />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -214,9 +268,7 @@ const DetailPeminjaman = () => {
                 </p>
               </div>
 
-              {/* Statistics Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 fade-in-up-delay-1">
-                {/* Total Peminjaman */}
                 <div className="stats-card rounded-2xl p-8 text-center shadow-lg">
                   <div className="flex items-center justify-center mb-6">
                     <div className="p-4 bg-gradient-to-br from-[#096B68] to-[#90D1CA] rounded-full shadow-lg">
@@ -232,7 +284,6 @@ const DetailPeminjaman = () => {
                   <div className="mt-4 w-16 h-1 bg-gradient-to-r from-[#096B68] to-[#90D1CA] mx-auto rounded-full"></div>
                 </div>
 
-                {/* Sedang Dipinjam */}
                 <div className="stats-card rounded-2xl p-8 text-center shadow-lg">
                   <div className="flex items-center justify-center mb-6">
                     <div className="p-4 bg-gradient-to-br from-yellow-500 to-amber-500 rounded-full shadow-lg">
@@ -250,7 +301,6 @@ const DetailPeminjaman = () => {
                   </div>
                 </div>
 
-                {/* Sudah Dikembalikan */}
                 <div className="stats-card rounded-2xl p-8 text-center shadow-lg">
                   <div className="flex items-center justify-center mb-6">
                     <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full shadow-lg">
@@ -270,9 +320,7 @@ const DetailPeminjaman = () => {
           </div>
         </div>
 
-        {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Search and Filter */}
           <div className="mb-10 fade-in-up-delay-2">
             <div className="backdrop-filter backdrop-blur-lg bg-white/95 rounded-2xl shadow-xl p-8 border border-white/20">
               <div className="flex flex-col sm:flex-row gap-6">
@@ -302,7 +350,6 @@ const DetailPeminjaman = () => {
             </div>
           </div>
 
-          {/* Riwayat Peminjaman Cards */}
           <div className="space-y-8">
             {filteredData.map((item, index) => {
               const categoryInfo = getCategoryIcon(item.kategori);
@@ -364,7 +411,6 @@ const DetailPeminjaman = () => {
                       </div>
                     </div>
                     
-                    {/* Progress Bar untuk item yang sedang dipinjam */}
                     {item.status === 'dipinjam' && (
                       <div className="mt-8 pt-6 border-t border-slate-200">
                         <div className="flex justify-between items-center text-sm text-slate-600 mb-4">
@@ -395,7 +441,6 @@ const DetailPeminjaman = () => {
             })}
           </div>
 
-          {/* Empty State */}
           {filteredData.length === 0 && (
             <div className="text-center py-20">
               <div className="backdrop-filter backdrop-blur-lg bg-white/95 rounded-2xl p-12 shadow-xl border border-white/20 max-w-md mx-auto">
@@ -412,7 +457,6 @@ const DetailPeminjaman = () => {
             </div>
           )}
 
-          {/* Bottom decorative elements */}
           <div className="mt-16 flex justify-center space-x-4">
             <div className="w-2 h-2 bg-[#096B68] rounded-full opacity-60 pulse-dot"></div>
             <div className="w-2 h-2 bg-[#90D1CA] rounded-full opacity-60 pulse-dot" style={{animationDelay: '0.5s'}}></div>

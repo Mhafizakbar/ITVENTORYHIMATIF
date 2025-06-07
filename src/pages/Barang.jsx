@@ -1,120 +1,128 @@
-import React, { useState } from 'react';
-import { AudioLines, ShoppingBag, Sparkles, ChevronDown, Package } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { AudioLines, ShoppingBag, Sparkles, ChevronDown, Package, Loader2, AlertCircle } from 'lucide-react';
 import Navbar from '../components/Navbar';
+
+
+// Mock Navbar component
+
 
 const Barang = () => {
   const [expandedCategory, setExpandedCategory] = useState(null);
+  const [itemsData, setItemsData] = useState([]);
+  const [categoriesData, setCategoriesData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Data barang sesuai dengan yang diberikan
-  const itemsData = [
-    {
-      "id_barang": 1,
-      "nama_barang": "Laptop Asus ROG",
-      "id_kategori": 2,
-      "jumlah": 10,
-      "deskripsi": "Laptop gaming high-end",
-      "kategori": {
-        "id_kategori": 2,
-        "nama_kategori": "Furniture"
-      }
-    },
-    {
-      "id_barang": 7,
-      "nama_barang": "Microphone",
-      "id_kategori": 1,
-      "jumlah": 10,
-      "deskripsi": "Microphone untuk rekaman dan event",
-      "kategori": {
-        "id_kategori": 1,
-        "nama_kategori": "Audio"
-      }
-    },
-    {
-      "id_barang": 8,
-      "nama_barang": "TOA Speaker",
-      "id_kategori": 1,
-      "jumlah": 5,
-      "deskripsi": "Speaker merk TOA untuk sistem suara",
-      "kategori": {
-        "id_kategori": 1,
-        "nama_kategori": "Audio"
-      }
-    },
-    {
-      "id_barang": 9,
-      "nama_barang": "Speaker",
-      "id_kategori": 1,
-      "jumlah": 8,
-      "deskripsi": "Speaker portable untuk presentasi",
-      "kategori": {
-        "id_kategori": 1,
-        "nama_kategori": "Audio"
-      }
-    },
-    {
-      "id_barang": 10,
-      "nama_barang": "Baterai Mic",
-      "id_kategori": 3,
-      "jumlah": 20,
-      "deskripsi": "Baterai cadangan untuk microphone wireless",
-      "kategori": {
-        "id_kategori": 3,
-        "nama_kategori": "Aksesoris"
-      }
-    },
-    {
-      "id_barang": 11,
-      "nama_barang": "karpet",
-      "id_kategori": 2,
-      "jumlah": 3,
-      "deskripsi": "Karpet untuk acara dan dekorasi ruangan",
-      "kategori": {
-        "id_kategori": 2,
-        "nama_kategori": "Furniture"
-      }
-    },
-    {
-      "id_barang": 12,
-      "nama_barang": "Tripod",
-      "id_kategori": 3,
-      "jumlah": 7,
-      "deskripsi": "Tripod untuk kamera dan peralatan recording",
-      "kategori": {
-        "id_kategori": 3,
-        "nama_kategori": "Aksesoris"
-      }
-    }
-  ];
+  // Fetch data dari API dengan credentials include
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  const categories = [
-    {
-      id: 1,
-      name: "Audio",
-      description: "Temukan berbagai peralatan audio berkualitas untuk kebutuhan Anda.",
-      icon: AudioLines,
-      image: "G1.png",
-      bgColor: "bg-[#096B68]",
-      iconColor: "text-[#096B68]",
-    },
-    {
-      id: 2,
-      name: "Perabotan",
-      description: "Perabot penunjang kegiatan, dari rapat hingga acara besar.",
-      icon: ShoppingBag,
-      image: "G2.png",
-      bgColor: "bg-[#90D1CA]",
-      iconColor: "text-[#90D1CA]",
-    },
-    {
-      id: 3,
-      name: "Aksesoris",
-      description: "Pelengkap praktis untuk dokumentasi dan acara.",
-      icon: Sparkles,
-      image: "G3.png",
-      bgColor: "bg-[#FFD586]",
-      iconColor: "text-[#FFD586]",
+        // Fetch barang dan kategori secara bersamaan dengan credentials
+        const [barangResponse, kategoriResponse] = await Promise.all([
+          fetch('https://pweb-be-production.up.railway.app/barang', {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              // Tambahkan header lain jika diperlukan
+            }
+          }),
+          fetch('https://pweb-be-production.up.railway.app/kategori', {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              // Tambahkan header lain jika diperlukan
+            }
+          })
+        ]);
+
+        if (!barangResponse.ok) {
+          throw new Error(`Error fetching barang: ${barangResponse.status} ${barangResponse.statusText}`);
+        }
+        if (!kategoriResponse.ok) {
+          throw new Error(`Error fetching kategori: ${kategoriResponse.status} ${kategoriResponse.statusText}`);
+        }
+
+        const barangData = await barangResponse.json();
+        const kategoriData = await kategoriResponse.json();
+
+        console.log('Barang data:', barangData);
+        console.log('Kategori data:', kategoriData);
+
+        setItemsData(barangData);
+        setCategoriesData(kategoriData);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Mapping kategori dengan icon dan warna (fallback untuk styling)
+  const getCategoryStyle = (categoryId, categoryName) => {
+    // Mapping berdasarkan nama kategori atau ID
+    const name = categoryName?.toLowerCase() || '';
+    
+    if (name.includes('audio') || categoryId === 1) {
+      return {
+        icon: AudioLines,
+        bgColor: "bg-[#096B68]",
+        iconColor: "text-[#096B68]",
+        description: "Temukan berbagai peralatan audio berkualitas untuk kebutuhan Anda."
+      };
+    } else if (name.includes('furniture') || name.includes('perabotan') || categoryId === 2) {
+      return {
+        icon: ShoppingBag,
+        bgColor: "bg-[#90D1CA]",
+        iconColor: "text-[#90D1CA]",
+        description: "Perabot penunjang kegiatan, dari rapat hingga acara besar."
+      };
+    } else {
+      return {
+        icon: Sparkles,
+        bgColor: "bg-[#FFD586]",
+        iconColor: "text-[#FFD586]",
+        description: "Pelengkap praktis untuk dokumentasi dan acara."
+      };
     }
-  ];
+  };
+
+  // Buat kategori "Tidak Berkategori" untuk item dengan id_kategori null
+  const createUncategorizedCategory = () => ({
+    id: 'uncategorized',
+    name: 'Tidak Berkategori',
+    icon: Package,
+    bgColor: "bg-gray-500",
+    iconColor: "text-gray-500",
+    description: "Item yang belum dikategorikan atau dalam proses pengkategorian."
+  });
+
+  // Transform data kategori untuk UI
+  const categories = [...categoriesData.map(cat => {
+    const style = getCategoryStyle(cat.id_kategori || cat.id, cat.nama_kategori || cat.name);
+    return {
+      id: cat.id_kategori || cat.id,
+      name: cat.nama_kategori || cat.name,
+      ...style
+    };
+  })];
+
+  // Tambahkan kategori "Tidak Berkategori" jika ada item dengan id_kategori null
+  const uncategorizedItems = itemsData.filter(item => 
+    item.id_kategori === null || item.id_kategori === undefined
+  );
+  
+  if (uncategorizedItems.length > 0) {
+    categories.push(createUncategorizedCategory());
+  }
 
   const handleCategoryClick = (categoryId) => {
     setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
@@ -122,12 +130,100 @@ const Barang = () => {
 
   // Function to get items by category
   const getItemsByCategory = (categoryId) => {
-    return itemsData.filter(item => item.id_kategori === categoryId);
+    if (categoryId === 'uncategorized') {
+      return itemsData.filter(item => 
+        item.id_kategori === null || item.id_kategori === undefined
+      );
+    }
+    
+    return itemsData.filter(item => 
+      (item.id_kategori === categoryId) || 
+      (item.kategori && item.kategori.id_kategori === categoryId)
+    );
   };
 
   // Get current expanded category data
   const expandedCategoryData = expandedCategory ? categories.find(cat => cat.id === expandedCategory) : null;
   const expandedCategoryItems = expandedCategory ? getItemsByCategory(expandedCategory) : [];
+
+  // Retry function untuk reload data
+  const retryFetch = () => {
+    setError(null);
+    setLoading(true);
+    // Trigger useEffect lagi dengan mengubah dependency
+    window.location.reload();
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen relative">
+        {/* Background Image */}
+        <div 
+          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
+          style={{ 
+            backgroundImage: 'url(https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80)',
+            backgroundAttachment: 'fixed'
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/85 to-blue-50/90 backdrop-blur-sm"></div>
+        </div>
+
+        <div className="relative z-10">
+          <Navbar />
+          <div className="container mx-auto px-6 py-16 flex items-center justify-center min-h-[60vh]">
+            <div className="text-center">
+              <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-[#096B68]" />
+              <p className="text-lg text-slate-600">Memuat data inventaris...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen relative">
+        {/* Background Image */}
+        <div 
+          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
+          style={{ 
+            backgroundImage: 'url(https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80)',
+            backgroundAttachment: 'fixed'
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/85 to-blue-50/90 backdrop-blur-sm"></div>
+        </div>
+
+        <div className="relative z-10">
+          <Navbar />
+          <div className="container mx-auto px-6 py-16 flex items-center justify-center min-h-[60vh]">
+            <div className="text-center">
+              <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
+              <h3 className="text-xl font-semibold text-slate-800 mb-2">Terjadi Kesalahan</h3>
+              <p className="text-slate-600 mb-4">{error}</p>
+              <div className="flex gap-4 justify-center">
+                <button 
+                  onClick={retryFetch}
+                  className="px-6 py-2 bg-[#096B68] text-white rounded-lg hover:bg-[#085854] transition-colors"
+                >
+                  Coba Lagi
+                </button>
+                <button 
+                  onClick={() => setError(null)}
+                  className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  Tutup Error
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative">
@@ -135,7 +231,7 @@ const Barang = () => {
       <div 
         className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
         style={{ 
-          backgroundImage: 'url(fixbg.jpg)',
+          backgroundImage: 'url(https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80)',
           backgroundAttachment: 'fixed'
         }}
       >
@@ -145,7 +241,7 @@ const Barang = () => {
 
       {/* Content */}
       <div className="relative z-10">
-        <style jsx>{`
+        <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
           
           .milku-font {
@@ -347,6 +443,10 @@ const Barang = () => {
             font-weight: 600;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
           }
+
+          .category-card:hover .category-card-hover {
+            opacity: 1;
+          }
         `}</style>
 
         <Navbar />
@@ -354,46 +454,44 @@ const Barang = () => {
         <div className="container mx-auto px-6 py-16">
           {/* Header Section */}
           <div className="text-center mb-16">
-            
-              <h1 className="milku-font text-5xl md:text-6xl font-light text-slate-800 mb-6 tracking-widest fade-in-up font-bold">
-                K A T E G O R I
-              </h1>
-              <div className="w-24 h-1 bg-gradient-to-r from-green-600 to-emerald-800 mx-auto mb-8 scale-in"></div>
-              <p className="text-slate-600 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed fade-in-up-delay-1">
-                Temukan dan pinjam inventaris sesuai kebutuhan kegiatanmu di ITVENTORY!
-                Inventaris dikelompokkan berdasarkan jenis untuk memudahkan pencarian dan mendukung kegiatan seperti rapat, acara, dan operasional harian.
-              </p>
-            
+            <h1 className="milku-font text-5xl md:text-6xl font-light text-slate-800 mb-6 tracking-widest fade-in-up font-bold">
+              K A T E G O R I
+            </h1>
+            <div className="w-24 h-1 bg-gradient-to-r from-green-600 to-emerald-800 mx-auto mb-8 scale-in"></div>
+            <p className="text-slate-600 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed fade-in-up-delay-1">
+              Temukan dan pinjam inventaris sesuai kebutuhan kegiatanmu di ITVENTORY!
+              Inventaris dikelompokkan berdasarkan jenis untuk memudahkan pencarian dan mendukung kegiatan seperti rapat, acara, dan operasional harian.
+            </p>
           </div>
 
           {/* Categories Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 w-full mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 w-full mb-8">
             {categories.map((category, index) => {
               const IconComponent = category.icon;
-              const animationClass = index === 0 ? 'slide-in-left' : index === 2 ? 'slide-in-right' : 'fade-in-up-delay-2';
+              const animationClass = index % 4 === 0 ? 'slide-in-left' : 
+                                   index % 4 === 3 ? 'slide-in-right' : 
+                                   'fade-in-up-delay-2';
               const categoryItems = getItemsByCategory(category.id);
               const isExpanded = expandedCategory === category.id;
               
               return (
                 <div key={category.id} className="w-full">
                   <div 
-                    className={`category-card cursor-pointer rounded-3xl p-6 ${animationClass} ${isExpanded ? 'ring-4 ring-opacity-50 ' + (category.id === 1 ? 'ring-emerald-300' : category.id === 2 ? 'ring-teal-300' : 'ring-yellow-300') : ''}`}
+                    className={`category-card cursor-pointer rounded-3xl p-6 ${animationClass} ${isExpanded ? 'ring-4 ring-opacity-50 ' + (category.id === 1 ? 'ring-emerald-300' : category.id === 2 ? 'ring-teal-300' : category.id === 3 ? 'ring-yellow-300' : 'ring-gray-300') : ''}`}
                     onClick={() => handleCategoryClick(category.id)}
                   >
                     {/* Circular Image Container */}
                     <div className="relative mb-6">
-                      <div className={`w-64 h-64 mx-auto rounded-full ${category.bgColor} p-1 shadow-2xl`}>
+                      <div className={`w-48 h-48 mx-auto rounded-full ${category.bgColor} p-1 shadow-2xl`}>
                         <div className="w-full h-full rounded-full overflow-hidden bg-white relative">
                           {/* Background Image */}
-                          <div 
-                            className="category-image w-full h-full bg-cover bg-center rounded-full bg-gray-200"
-                          >
+                          <div className="category-image w-full h-full bg-cover bg-center rounded-full bg-gray-200">
                             {/* Image Overlay */}
                             <div className="image-overlay absolute inset-0 bg-white bg-opacity-70 rounded-full flex items-center justify-center">
                               {/* Icon Overlay */}
                               <div className="icon-overlay">
                                 <IconComponent 
-                                  size={80} 
+                                  size={60} 
                                   className={`${category.iconColor} drop-shadow-lg`}
                                   strokeWidth={1.5}
                                 />
@@ -410,10 +508,10 @@ const Barang = () => {
 
                     {/* Content */}
                     <div className="text-center px-4">
-                      <h3 className="milku-font text-2xl md:text-3xl font-medium text-slate-800 mb-4 tracking-wide">
+                      <h3 className="milku-font text-xl md:text-2xl font-medium text-slate-800 mb-3 tracking-wide">
                         {category.name}
                       </h3>
-                      <p className="text-slate-600 text-base leading-relaxed mb-4">
+                      <p className="text-slate-600 text-sm leading-relaxed mb-4">
                         {category.description}
                       </p>
                       
@@ -449,7 +547,8 @@ const Barang = () => {
               <div className={`rounded-2xl p-8 shadow-2xl border-l-8 ${
                 expandedCategoryData.id === 1 ? 'border-[#096B68] bg-gradient-to-r from-[#90D1CA] via-white to-[#FFFBDE]' :
                 expandedCategoryData.id === 2 ? 'border-[#90D1CA] bg-gradient-to-r from-[#FFFBDE] via-white to-[#90D1CA]' :
-                'border-[#FFD586] bg-gradient-to-r from-[#90D1CA] via-white to-[#FFFBDE]'
+                expandedCategoryData.id === 3 ? 'border-[#FFD586] bg-gradient-to-r from-[#90D1CA] via-white to-[#FFFBDE]' :
+                'border-gray-500 bg-gradient-to-r from-gray-100 via-white to-gray-100'
               } backdrop-filter backdrop-blur-sm bg-opacity-95`}>
                 
                 {/* Header with category info */}
@@ -458,12 +557,14 @@ const Barang = () => {
                     <div className={`p-3 rounded-full ${
                       expandedCategoryData.id === 1 ? 'bg-blue-100' :
                       expandedCategoryData.id === 2 ? 'bg-blue-100' :
-                      'bg-orange-100'
+                      expandedCategoryData.id === 3 ? 'bg-orange-100' :
+                      'bg-gray-100'
                     }`}>
                       <expandedCategoryData.icon className={`w-8 h-8 ${
                         expandedCategoryData.id === 1 ? 'text-[#096B68]' :
                         expandedCategoryData.id === 2 ? 'text-[#90D1CA]' :
-                        'text-[#FFD586]'
+                        expandedCategoryData.id === 3 ? 'text-[#FFD586]' :
+                        'text-gray-500'
                       }`} />
                     </div>
                     <div>
@@ -489,11 +590,12 @@ const Barang = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {expandedCategoryItems.map((item, itemIndex) => (
                     <div 
-                      key={item.id_barang} 
+                      key={item.id_barang || item.id} 
                       className={`bg-white rounded-xl p-6 shadow-lg border-2 transition-all duration-300 hover:shadow-xl hover:transform hover:scale-[1.02] item-slide-in ${
                         expandedCategoryData.id === 1 ? 'border-[#096B68] hover:border-[#096B68]' :
                         expandedCategoryData.id === 2 ? 'border-[#90D1CA] hover:border-[#90D1CA]' :
-                        'border-[#FFD586] hover:border-[#FFD586]'
+                        expandedCategoryData.id === 3 ? 'border-[#FFD586] hover:border-[#FFD586]' :
+                        'border-gray-400 hover:border-gray-500'
                       }`}
                       style={{animationDelay: `${itemIndex * 0.1}s`}}
                     >
@@ -506,30 +608,38 @@ const Barang = () => {
                             <div className={`p-2 rounded-lg flex-shrink-0 ${
                               expandedCategoryData.id === 1 ? 'bg-blue-50' :
                               expandedCategoryData.id === 2 ? 'bg-blue-50' :
-                              'bg-blue-50'
+                              expandedCategoryData.id === 3 ? 'bg-orange-50' :
+                              'bg-gray-50'
                             }`}>
                               <Package className={`w-6 h-6 ${
                                 expandedCategoryData.id === 1 ? 'text-[#096B68]' :
                                 expandedCategoryData.id === 2 ? 'text-[#90D1CA]' :
-                                'text-[#FFD586]'
+                                expandedCategoryData.id === 3 ? 'text-[#FFD586]' :
+                                'text-gray-500'
                               }`} />
                             </div>
                             
                             {/* Item Content */}
                             <div className="flex-1">
                               <h5 className="text-xl font-bold text-slate-800 leading-tight mb-2">
-                                {item.nama_barang}
+                                {item.nama_barang || item.name}
                               </h5>
                               <p className="text-slate-700 text-sm leading-relaxed">
-                                {item.deskripsi}
+                                {item.deskripsi || item.description || 'Tidak ada deskripsi'}
                               </p>
+                              {/* Kategori info untuk item tidak berkategori */}
+                              {(item.id_kategori === null || item.id_kategori === undefined) && (
+                                <span className="inline-block mt-2 px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded-full">
+                                  Perlu dikategorikan
+                                </span>
+                              )}
                             </div>
                           </div>
                           
                           {/* Right side - Quantity Badge */}
                           <div className="flex-shrink-0">
-                          <div className="bg-[#096B68] text-white text-sm px-2 py-1 rounded-full">
-                           {item.jumlah} unit{item.jumlah !== 1 ? 's' : ''}
+                            <div className="bg-[#096B68] text-white text-sm px-2 py-1 rounded-full">
+                              {item.jumlah || item.quantity || 0} unit{((item.jumlah || item.quantity || 0) !== 1) ? 's' : ''}
                             </div>
                           </div>
                         </div>
@@ -556,12 +666,6 @@ const Barang = () => {
             <div className="w-2 h-2 bg-[#FFD586] rounded-full opacity-60 pulse-dot" style={{animationDelay: '1s'}}></div>
           </div>
         </div>
-
-        <style jsx>{`
-          .category-card:hover .category-card-hover {
-            opacity: 1;
-          }
-        `}</style>
       </div>
     </div>
   );
