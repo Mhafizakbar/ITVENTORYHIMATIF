@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
+import AlertModal from '../components/AlertModal';
+import { useAlert } from '../hooks/useModal';
+import { formatDateToIndonesian, formatDateTimeIndonesia } from '../utils/dateUtils';
 import {
   User,
   Mail,
@@ -16,7 +19,8 @@ import {
 const Profile = () => {
   const navigate = useNavigate();
   const { user, isLoggedIn } = useAuth();
-  
+  const alert = useAlert();
+
   const [profileData, setProfileData] = useState({
     nama_lengkap: '',
     email: '',
@@ -82,12 +86,12 @@ const Profile = () => {
 
       // Validasi input
       if (!editData.nama_lengkap.trim()) {
-        alert('Nama lengkap harus diisi!');
+        alert.showWarning('Validation Error', 'Nama lengkap harus diisi!');
         return;
       }
 
       if (!editData.no_telepon.trim()) {
-        alert('Nomor telepon harus diisi!');
+        alert.showWarning('Validation Error', 'Nomor telepon harus diisi!');
         return;
       }
 
@@ -116,10 +120,10 @@ const Profile = () => {
         no_telepon: editData.no_telepon
       }));
 
-      alert('Profile berhasil diupdate!');
+      alert.showSuccess('Success!', 'Profile berhasil diupdate!');
     } catch (err) {
       console.error('Error updating profile:', err);
-      alert(`Gagal mengupdate profile: ${err.message}`);
+      alert.showError('Error!', `Gagal mengupdate profile: ${err.message}`);
     } finally {
       setSaving(false);
     }
@@ -130,11 +134,7 @@ const Profile = () => {
   const formatDate = (dateString) => {
     if (!dateString) return 'Tidak tersedia';
     try {
-      return new Date(dateString).toLocaleDateString('id-ID', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
+      return formatDateToIndonesian(dateString, true); // Include timezone
     } catch {
       return 'Tidak tersedia';
     }
@@ -291,7 +291,7 @@ const Profile = () => {
                         <span className="text-xs sm:text-sm">Akun Aktif - {user?.role || 'USER'}</span>
                       </div>
                       <p className="text-xs text-green-600 mt-1">
-                        Login terakhir: {new Date().toLocaleDateString('id-ID')}
+                        Login terakhir: {formatDateToIndonesian(new Date(), true)}
                       </p>
                     </div>
                   </div>
@@ -301,6 +301,15 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={alert.alert.isOpen}
+        onClose={alert.hideAlert}
+        title={alert.alert.title}
+        message={alert.alert.message}
+        type={alert.alert.type}
+      />
     </div>
   );
 };

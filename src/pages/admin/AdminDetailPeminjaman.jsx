@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Search, 
+import FormModal, { FormInput, FormSelect, FormTextarea } from '../../components/FormModal';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import AlertModal from '../../components/AlertModal';
+import { useModal, useAlert, useConfirm } from '../../hooks/useModal';
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Search,
   ClipboardList,
   Package,
   Hash,
@@ -17,11 +21,10 @@ const AdminDetailPeminjaman = () => {
   const [details, setDetails] = useState([]);
   const [peminjaman, setPeminjaman] = useState([]);
   const [barang, setBarang] = useState([]);
-  const [users, setUsers] = useState([]); // Tambah state untuk users
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showModal, setShowModal] = useState(false);
   const [editingDetail, setEditingDetail] = useState(null);
   const [formData, setFormData] = useState({
     id_peminjaman: '',
@@ -29,6 +32,12 @@ const AdminDetailPeminjaman = () => {
     jumlah_pinjam: '',
     keterangan: ''
   });
+  const [submitLoading, setSubmitLoading] = useState(false);
+
+  // Modal hooks
+  const modal = useModal();
+  const alert = useAlert();
+  const confirm = useConfirm();
 
   useEffect(() => {
     fetchData();
@@ -82,13 +91,15 @@ const AdminDetailPeminjaman = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitLoading(true);
+
     try {
-      const url = editingDetail 
+      const url = editingDetail
         ? `https://pweb-be-production.up.railway.app/detail/${editingDetail.id_detail}`
         : 'https://pweb-be-production.up.railway.app/detail';
-      
+
       const method = editingDetail ? 'PUT' : 'POST';
-      
+
       const response = await fetch(url, {
         method,
         credentials: 'include',
@@ -106,37 +117,50 @@ const AdminDetailPeminjaman = () => {
       }
 
       await fetchData();
-      setShowModal(false);
+      modal.closeModal();
       setEditingDetail(null);
       setFormData({ id_peminjaman: '', id_barang: '', jumlah_pinjam: '', keterangan: '' });
-      
-      alert(`Detail ${editingDetail ? 'updated' : 'created'} successfully!`);
+
+      alert.showSuccess(
+        'Success!',
+        `Detail ${editingDetail ? 'updated' : 'created'} successfully!`
+      );
     } catch (err) {
       console.error('Error saving detail:', err);
-      alert(`Failed to ${editingDetail ? 'update' : 'create'} detail`);
+      alert.showError(
+        'Error!',
+        `Failed to ${editingDetail ? 'update' : 'create'} detail`
+      );
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
-  const handleDelete = async (detailId) => {
-    if (!confirm('Are you sure you want to delete this detail?')) return;
+  const handleDelete = (detailId, barangName) => {
+    confirm.showConfirm(
+      'Delete Detail',
+      `Are you sure you want to delete detail for "${barangName}"? This action cannot be undone.`,
+      async () => {
+        try {
+          const response = await fetch(`https://pweb-be-production.up.railway.app/detail/${detailId}`, {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+          });
 
-    try {
-      const response = await fetch(`https://pweb-be-production.up.railway.app/detail/${detailId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
-      });
+          if (!response.ok) {
+            throw new Error('Failed to delete detail');
+          }
 
-      if (!response.ok) {
-        throw new Error('Failed to delete detail');
-      }
-
-      await fetchData();
-      alert('Detail deleted successfully!');
-    } catch (err) {
-      console.error('Error deleting detail:', err);
-      alert('Failed to delete detail');
-    }
+          await fetchData();
+          alert.showSuccess('Success!', 'Detail deleted successfully!');
+        } catch (err) {
+          console.error('Error deleting detail:', err);
+          alert.showError('Error!', 'Failed to delete detail');
+        }
+      },
+      'danger'
+    );
   };
 
   const handleEdit = (item) => {
@@ -147,7 +171,13 @@ const AdminDetailPeminjaman = () => {
       jumlah_pinjam: item.jumlah_pinjam?.toString() || '',
       keterangan: item.keterangan || ''
     });
-    setShowModal(true);
+    modal.openModal();
+  };
+
+  const handleAddNew = () => {
+    setEditingDetail(null);
+    setFormData({ id_peminjaman: '', id_barang: '', jumlah_pinjam: '', keterangan: '' });
+    modal.openModal();
   };
 
   const getBarangName = (id_barang) => {
@@ -198,11 +228,7 @@ const AdminDetailPeminjaman = () => {
               <p className="text-gray-600 mt-2">Manage borrowing details</p>
             </div>
             <button
-              onClick={() => {
-                setEditingDetail(null);
-                setFormData({ id_peminjaman: '', id_barang: '', jumlah_pinjam: '', keterangan: '' });
-                setShowModal(true);
-              }}
+              onClick={handleAddNew}
               className="bg-[#096b68] text-white px-4 py-2 rounded-lg hover:bg-[#004d49] transition-colors duration-200 flex items-center"
             >
               <Plus className="h-5 w-5 mr-2" />
@@ -304,7 +330,7 @@ const AdminDetailPeminjaman = () => {
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(item.id_detail)}
+                          onClick={() => handleDelete(item.id_detail, getBarangName(item.id_barang))}
                           className="text-red-600 hover:text-red-900"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -319,86 +345,83 @@ const AdminDetailPeminjaman = () => {
         </div>
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">
-              {editingDetail ? 'Edit Detail' : 'Add New Detail'}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Peminjaman</label>
-                <select
-                  value={formData.id_peminjaman}
-                  onChange={(e) => setFormData({...formData, id_peminjaman: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
-                  required
-                >
-                  <option value="">Select Peminjaman</option>
-                  {peminjaman.map((pinjam) => (
-                    <option key={pinjam.id_peminjaman} value={pinjam.id_peminjaman}>
-                      #{pinjam.id_peminjaman} - {getUserName(pinjam.id_pengguna)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Barang</label>
-                <select
-                  value={formData.id_barang}
-                  onChange={(e) => setFormData({...formData, id_barang: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
-                  required
-                >
-                  <option value="">Select Barang</option>
-                  {barang.map((item) => (
-                    <option key={item.id_barang} value={item.id_barang}>
-                      {item.nama_barang}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Jumlah Pinjam</label>
-                <input
-                  type="number"
-                  value={formData.jumlah_pinjam}
-                  onChange={(e) => setFormData({...formData, jumlah_pinjam: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
-                  required
-                  min="1"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
-                <textarea
-                  value={formData.keterangan}
-                  onChange={(e) => setFormData({...formData, keterangan: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
-                  rows="3"
-                  placeholder="Optional notes..."
-                />
-              </div>
-              <div className="flex justify-end space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#096b68] text-white rounded-lg hover:bg-[#004d49]"
-                >
-                  {editingDetail ? 'Update' : 'Create'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Form Modal */}
+      <FormModal
+        isOpen={modal.isOpen}
+        onClose={modal.closeModal}
+        title={editingDetail ? 'Edit Detail' : 'Add New Detail'}
+        onSubmit={handleSubmit}
+        submitText={editingDetail ? 'Update' : 'Create'}
+        loading={submitLoading}
+        size="lg"
+      >
+        <FormSelect
+          label="Peminjaman"
+          value={formData.id_peminjaman}
+          onChange={(e) => setFormData({...formData, id_peminjaman: e.target.value})}
+          required
+        >
+          <option value="">Select Peminjaman</option>
+          {peminjaman.map((pinjam) => (
+            <option key={pinjam.id_peminjaman} value={pinjam.id_peminjaman}>
+              #{pinjam.id_peminjaman} - {getUserName(pinjam.id_pengguna)}
+            </option>
+          ))}
+        </FormSelect>
+
+        <FormSelect
+          label="Barang"
+          value={formData.id_barang}
+          onChange={(e) => setFormData({...formData, id_barang: e.target.value})}
+          required
+        >
+          <option value="">Select Barang</option>
+          {barang.map((item) => (
+            <option key={item.id_barang} value={item.id_barang}>
+              {item.nama_barang}
+            </option>
+          ))}
+        </FormSelect>
+
+        <FormInput
+          label="Jumlah Pinjam"
+          type="number"
+          value={formData.jumlah_pinjam}
+          onChange={(e) => setFormData({...formData, jumlah_pinjam: e.target.value})}
+          required
+          min="1"
+        />
+
+        <FormTextarea
+          label="Keterangan"
+          value={formData.keterangan}
+          onChange={(e) => setFormData({...formData, keterangan: e.target.value})}
+          rows="3"
+          placeholder="Optional notes..."
+        />
+      </FormModal>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirm.confirm.isOpen}
+        onClose={confirm.hideConfirm}
+        onConfirm={confirm.handleConfirm}
+        title={confirm.confirm.title}
+        message={confirm.confirm.message}
+        type={confirm.confirm.type}
+        loading={confirm.confirm.loading}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={alert.alert.isOpen}
+        onClose={alert.hideAlert}
+        title={alert.alert.title}
+        message={alert.alert.message}
+        type={alert.alert.type}
+      />
     </AdminLayout>
   );
 };

@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Search, 
+import FormModal, { FormInput, FormSelect, FormTextarea } from '../../components/FormModal';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import AlertModal from '../../components/AlertModal';
+import { useModal, useAlert, useConfirm } from '../../hooks/useModal';
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Search,
   Package,
   Tag,
   Hash,
@@ -19,7 +23,6 @@ const AdminBarang = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showModal, setShowModal] = useState(false);
   const [editingBarang, setEditingBarang] = useState(null);
   const [formData, setFormData] = useState({
     nama_barang: '',
@@ -27,6 +30,12 @@ const AdminBarang = () => {
     jumlah: '',
     deskripsi: ''
   });
+  const [submitLoading, setSubmitLoading] = useState(false);
+
+  // Modal hooks
+  const modal = useModal();
+  const alert = useAlert();
+  const confirm = useConfirm();
 
   useEffect(() => {
     fetchData();
@@ -69,13 +78,15 @@ const AdminBarang = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitLoading(true);
+
     try {
-      const url = editingBarang 
+      const url = editingBarang
         ? `https://pweb-be-production.up.railway.app/barang/${editingBarang.id_barang}`
         : 'https://pweb-be-production.up.railway.app/barang';
-      
+
       const method = editingBarang ? 'PUT' : 'POST';
-      
+
       const response = await fetch(url, {
         method,
         credentials: 'include',
@@ -92,37 +103,50 @@ const AdminBarang = () => {
       }
 
       await fetchData();
-      setShowModal(false);
+      modal.closeModal();
       setEditingBarang(null);
       setFormData({ nama_barang: '', id_kategori: '', jumlah: '', deskripsi: '' });
-      
-      alert(`Barang ${editingBarang ? 'updated' : 'created'} successfully!`);
+
+      alert.showSuccess(
+        'Success!',
+        `Barang ${editingBarang ? 'updated' : 'created'} successfully!`
+      );
     } catch (err) {
       console.error('Error saving barang:', err);
-      alert(`Failed to ${editingBarang ? 'update' : 'create'} barang`);
+      alert.showError(
+        'Error!',
+        `Failed to ${editingBarang ? 'update' : 'create'} barang`
+      );
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
-  const handleDelete = async (barangId) => {
-    if (!confirm('Are you sure you want to delete this barang?')) return;
+  const handleDelete = (barangId, barangName) => {
+    confirm.showConfirm(
+      'Delete Barang',
+      `Are you sure you want to delete "${barangName}"? This action cannot be undone.`,
+      async () => {
+        try {
+          const response = await fetch(`https://pweb-be-production.up.railway.app/barang/${barangId}`, {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+          });
 
-    try {
-      const response = await fetch(`https://pweb-be-production.up.railway.app/barang/${barangId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
-      });
+          if (!response.ok) {
+            throw new Error('Failed to delete barang');
+          }
 
-      if (!response.ok) {
-        throw new Error('Failed to delete barang');
-      }
-
-      await fetchData();
-      alert('Barang deleted successfully!');
-    } catch (err) {
-      console.error('Error deleting barang:', err);
-      alert('Failed to delete barang');
-    }
+          await fetchData();
+          alert.showSuccess('Success!', 'Barang deleted successfully!');
+        } catch (err) {
+          console.error('Error deleting barang:', err);
+          alert.showError('Error!', 'Failed to delete barang');
+        }
+      },
+      'danger'
+    );
   };
 
   const handleEdit = (item) => {
@@ -133,7 +157,13 @@ const AdminBarang = () => {
       jumlah: item.jumlah?.toString() || '',
       deskripsi: item.deskripsi || ''
     });
-    setShowModal(true);
+    modal.openModal();
+  };
+
+  const handleAddNew = () => {
+    setEditingBarang(null);
+    setFormData({ nama_barang: '', id_kategori: '', jumlah: '', deskripsi: '' });
+    modal.openModal();
   };
 
   const getKategoriName = (id_kategori) => {
@@ -157,11 +187,7 @@ const AdminBarang = () => {
               <p className="text-gray-600 mt-2">Manage inventory items</p>
             </div>
             <button
-              onClick={() => {
-                setEditingBarang(null);
-                setFormData({ nama_barang: '', id_kategori: '', jumlah: '', deskripsi: '' });
-                setShowModal(true);
-              }}
+              onClick={handleAddNew}
               className="bg-[#096b68] text-white px-4 py-2 rounded-lg hover:bg-[#004d49] transition-colors duration-200 flex items-center"
             >
               <Plus className="h-5 w-5 mr-2" />
@@ -245,7 +271,7 @@ const AdminBarang = () => {
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(item.id_barang)}
+                          onClick={() => handleDelete(item.id_barang, item.nama_barang)}
                           className="text-red-600 hover:text-red-900"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -260,79 +286,75 @@ const AdminBarang = () => {
         </div>
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">
-              {editingBarang ? 'Edit Barang' : 'Add New Barang'}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nama Barang</label>
-                <input
-                  type="text"
-                  value={formData.nama_barang}
-                  onChange={(e) => setFormData({...formData, nama_barang: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                <select
-                  value={formData.id_kategori}
-                  onChange={(e) => setFormData({...formData, id_kategori: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
-                  required
-                >
-                  <option value="">Select Kategori</option>
-                  {kategori.map((kat) => (
-                    <option key={kat.id_kategori} value={kat.id_kategori}>
-                      {kat.nama_kategori}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
-                <input
-                  type="number"
-                  value={formData.jumlah}
-                  onChange={(e) => setFormData({...formData, jumlah: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
-                  required
-                  min="0"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                <textarea
-                  value={formData.deskripsi}
-                  onChange={(e) => setFormData({...formData, deskripsi: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
-                  rows="3"
-                />
-              </div>
-              <div className="flex justify-end space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#096b68] text-white rounded-lg hover:bg-[#004d49]"
-                >
-                  {editingBarang ? 'Update' : 'Create'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Form Modal */}
+      <FormModal
+        isOpen={modal.isOpen}
+        onClose={modal.closeModal}
+        title={editingBarang ? 'Edit Barang' : 'Add New Barang'}
+        onSubmit={handleSubmit}
+        submitText={editingBarang ? 'Update' : 'Create'}
+        loading={submitLoading}
+      >
+        <FormInput
+          label="Nama Barang"
+          type="text"
+          value={formData.nama_barang}
+          onChange={(e) => setFormData({...formData, nama_barang: e.target.value})}
+          required
+        />
+
+        <FormSelect
+          label="Kategori"
+          value={formData.id_kategori}
+          onChange={(e) => setFormData({...formData, id_kategori: e.target.value})}
+          required
+        >
+          <option value="">Select Kategori</option>
+          {kategori.map((kat) => (
+            <option key={kat.id_kategori} value={kat.id_kategori}>
+              {kat.nama_kategori}
+            </option>
+          ))}
+        </FormSelect>
+
+        <FormInput
+          label="Jumlah"
+          type="number"
+          value={formData.jumlah}
+          onChange={(e) => setFormData({...formData, jumlah: e.target.value})}
+          required
+          min="0"
+        />
+
+        <FormTextarea
+          label="Deskripsi"
+          value={formData.deskripsi}
+          onChange={(e) => setFormData({...formData, deskripsi: e.target.value})}
+          rows="3"
+        />
+      </FormModal>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirm.confirm.isOpen}
+        onClose={confirm.hideConfirm}
+        onConfirm={confirm.handleConfirm}
+        title={confirm.confirm.title}
+        message={confirm.confirm.message}
+        type={confirm.confirm.type}
+        loading={confirm.confirm.loading}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={alert.alert.isOpen}
+        onClose={alert.hideAlert}
+        title={alert.alert.title}
+        message={alert.alert.message}
+        type={alert.alert.type}
+      />
     </AdminLayout>
   );
 };

@@ -2,6 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Package, Clock, CheckCircle, Search, Filter, AudioLines, ShoppingBag, Sparkles, TrendingUp, Activity } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import { DateHeader } from '../components/RealTimeDate';
+import { TimezoneInfo } from '../components/IndonesiaTimezone';
+import {
+  formatDateToIndonesian,
+  formatDateShort,
+  getDaysDifference,
+  isToday,
+  getCurrentDate,
+  formatDateTimeIndonesia
+} from '../utils/dateUtils';
 
 const DetailPeminjaman = () => {
   const [riwayatPeminjaman, setRiwayatPeminjaman] = useState([]);
@@ -9,6 +19,7 @@ const DetailPeminjaman = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('semua');
+  const [lastUpdated, setLastUpdated] = useState(new Date());
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -45,6 +56,7 @@ const DetailPeminjaman = () => {
 );
         console.log('Mapped Data:', mappedData); // Debugging
         setRiwayatPeminjaman(mappedData);
+        setLastUpdated(new Date());
       } catch (err) {
         console.error('Error fetching riwayat peminjaman:', err);
         setError(err.message);
@@ -54,6 +66,13 @@ const DetailPeminjaman = () => {
     };
 
     fetchRiwayatPeminjaman();
+
+    // Auto-refresh setiap 5 menit untuk update status real-time
+    const interval = setInterval(() => {
+      fetchRiwayatPeminjaman();
+    }, 5 * 60 * 1000); // 5 menit
+
+    return () => clearInterval(interval);
   }, [navigate]);
 
   const filteredData = riwayatPeminjaman.filter(item => {
@@ -63,15 +82,17 @@ const DetailPeminjaman = () => {
   });
 
   const formatTanggal = (tanggal) => {
-    const date = new Date(tanggal);
-    if (isNaN(date.getTime())) {
-      return 'Tanggal tidak valid';
-    }
-    return date.toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
+    if (!tanggal) return 'Tanggal tidak valid';
+    return formatDateToIndonesian(tanggal, true); // Include timezone
+  };
+
+  const formatTanggalWithStatus = (tanggal) => {
+    if (!tanggal) return { formatted: 'Tanggal tidak valid', isToday: false };
+    return {
+      formatted: formatDateToIndonesian(tanggal, true), // Include timezone
+      isToday: isToday(tanggal),
+      daysFromToday: getDaysDifference(getCurrentDate(), tanggal)
+    };
   };
 
   const getCategoryIcon = (kategori) => {
@@ -259,13 +280,20 @@ const DetailPeminjaman = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="py-8">
               <div className="text-center mb-8 fade-in-up">
-                <h1 className="milku-font text-4xl md:text-5xl font-light text-slate-800 mb-4 tracking-widest font-bold">
+                <div className="flex justify-center mb-6">
+                  <DateHeader className="bg-white/90 backdrop-blur-lg" />
+                </div>
+                <h1 className="milku-font text-4xl md:text-5xl font-bold text-slate-800 mb-4 tracking-widest">
                   DETAIL PEMINJAMAN
                 </h1>
                 <div className="w-24 h-1 bg-gradient-to-r from-[#096B68] to-[#90D1CA] mx-auto mb-4"></div>
                 <p className="text-slate-600 text-lg max-w-2xl mx-auto leading-relaxed">
                   Pantau riwayat peminjaman inventaris Anda dengan mudah dan terorganisir
                 </p>
+                <div className="flex items-center justify-center mt-4 text-sm text-slate-500">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                  <span>Data terakhir diperbarui: {formatDateTimeIndonesia(lastUpdated, true)}</span>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 fade-in-up-delay-1">
@@ -322,6 +350,27 @@ const DetailPeminjaman = () => {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="mb-10 fade-in-up-delay-2">
+            {/* Info Box */}
+            <div className="backdrop-filter backdrop-blur-lg bg-blue-50/95 rounded-2xl shadow-xl p-6 border border-blue-200/50 mb-6">
+              <div className="flex items-start space-x-4">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Calendar className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-blue-800 mb-2">Informasi Tanggal</h3>
+                  <p className="text-blue-700 text-sm leading-relaxed">
+                    Tanggal yang ditampilkan adalah <strong>tanggal historis</strong> dari database peminjaman.
+                    Tanggal peminjaman menunjukkan kapan barang dipinjam (contoh: 8 Juni), bukan tanggal hari ini.
+                    Status dan perhitungan hari tersisa menggunakan <strong>waktu real-time</strong> untuk akurasi.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Timezone Info */}
+            <TimezoneInfo className="mb-6" />
+
+            {/* Search and Filter */}
             <div className="backdrop-filter backdrop-blur-lg bg-white/95 rounded-2xl shadow-xl p-8 border border-white/20">
               <div className="flex flex-col sm:flex-row gap-6">
                 <div className="flex-1 relative">
@@ -393,18 +442,63 @@ const DetailPeminjaman = () => {
                             <div className="p-2 bg-green-100 rounded-lg">
                               <Calendar className="w-6 h-6 text-green-600" />
                             </div>
-                            <div>
+                            <div className="flex-1">
                               <p className="text-sm font-semibold text-green-700 uppercase tracking-wider">Tanggal Pinjam</p>
                               <p className="text-lg font-bold text-slate-800">{formatTanggal(item.tanggalPinjam)}</p>
+                              {(() => {
+                                const dateStatus = formatTanggalWithStatus(item.tanggalPinjam);
+                                if (dateStatus.isToday) {
+                                  return (
+                                    <div className="flex items-center mt-1">
+                                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                                      <span className="text-xs text-green-600 font-medium">Hari ini</span>
+                                    </div>
+                                  );
+                                } else if (dateStatus.daysFromToday < 0) {
+                                  return (
+                                    <div className="flex items-center mt-1">
+                                      <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                                      <span className="text-xs text-blue-600 font-medium">{Math.abs(dateStatus.daysFromToday)} hari yang lalu</span>
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              })()}
                             </div>
                           </div>
                           <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-red-50 to-rose-50 rounded-xl border border-red-200">
                             <div className="p-2 bg-red-100 rounded-lg">
                               <Calendar className="w-6 h-6 text-red-600" />
                             </div>
-                            <div>
+                            <div className="flex-1">
                               <p className="text-sm font-semibold text-red-700 uppercase tracking-wider">Tanggal Kembali</p>
                               <p className="text-lg font-bold text-slate-800">{formatTanggal(item.tanggalKembali)}</p>
+                              {(() => {
+                                const dateStatus = formatTanggalWithStatus(item.tanggalKembali);
+                                if (dateStatus.isToday) {
+                                  return (
+                                    <div className="flex items-center mt-1">
+                                      <div className="w-2 h-2 bg-red-500 rounded-full mr-2 animate-pulse"></div>
+                                      <span className="text-xs text-red-600 font-medium">Jatuh tempo hari ini!</span>
+                                    </div>
+                                  );
+                                } else if (dateStatus.daysFromToday > 0) {
+                                  return (
+                                    <div className="flex items-center mt-1">
+                                      <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                                      <span className="text-xs text-yellow-600 font-medium">{dateStatus.daysFromToday} hari lagi</span>
+                                    </div>
+                                  );
+                                } else if (dateStatus.daysFromToday < 0) {
+                                  return (
+                                    <div className="flex items-center mt-1">
+                                      <div className="w-2 h-2 bg-red-500 rounded-full mr-2 animate-pulse"></div>
+                                      <span className="text-xs text-red-600 font-medium">Terlambat {Math.abs(dateStatus.daysFromToday)} hari!</span>
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              })()}
                             </div>
                           </div>
                         </div>
@@ -414,12 +508,35 @@ const DetailPeminjaman = () => {
                     {item.status === 'dipinjam' && (
                       <div className="mt-8 pt-6 border-t border-slate-200">
                         <div className="flex justify-between items-center text-sm text-slate-600 mb-4">
-                          <span className="font-semibold">Waktu Peminjaman</span>
+                          <div className="flex items-center space-x-2">
+                            <span className="font-semibold">Waktu Peminjaman</span>
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                            <span className="text-xs text-blue-600 font-medium">Real-time</span>
+                          </div>
                           <span className="flex items-center space-x-2">
                             <Clock className="w-4 h-4" />
-                            <span className="font-bold text-amber-600">
-                              {Math.ceil((new Date(item.tanggalKembali) - new Date()) / (1000 * 60 * 60 * 24))} hari tersisa
-                            </span>
+                            {(() => {
+                              const daysLeft = Math.ceil((new Date(item.tanggalKembali) - new Date()) / (1000 * 60 * 60 * 24));
+                              if (daysLeft > 0) {
+                                return (
+                                  <span className="font-bold text-amber-600">
+                                    {daysLeft} hari tersisa
+                                  </span>
+                                );
+                              } else if (daysLeft === 0) {
+                                return (
+                                  <span className="font-bold text-red-600 animate-pulse">
+                                    Jatuh tempo hari ini!
+                                  </span>
+                                );
+                              } else {
+                                return (
+                                  <span className="font-bold text-red-600 animate-pulse">
+                                    Terlambat {Math.abs(daysLeft)} hari!
+                                  </span>
+                                );
+                              }
+                            })()}
                           </span>
                         </div>
                         <div className="w-full bg-slate-200 rounded-full h-3 shadow-inner">

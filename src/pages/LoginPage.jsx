@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import AlertModal from '../components/AlertModal';
+import { useAlert } from '../hooks/useModal';
 
 
 const LoginPage = () => {
@@ -21,6 +23,7 @@ const LoginPage = () => {
 
   const navigate = useNavigate();
   const { login, user, isAdmin } = useAuth();
+  const alert = useAlert();
 
   // Redirect if already logged in
   useEffect(() => {
@@ -93,11 +96,11 @@ const LoginPage = () => {
 
         // Check user role and redirect accordingly
         if (data.data === 'ADMIN') {
-          alert('Login admin berhasil! Mengarahkan ke dashboard admin...');
-          navigate('/admin');
+          alert.showSuccess('Welcome Admin!', 'Login admin berhasil! Mengarahkan ke dashboard admin...');
+          setTimeout(() => navigate('/admin'), 1500);
         } else {
-          alert('Login berhasil!');
-          navigate('/home');
+          alert.showSuccess('Welcome!', 'Login berhasil!');
+          setTimeout(() => navigate('/home'), 1500);
         }
       })
       .catch(err => {
@@ -128,8 +131,8 @@ const LoginPage = () => {
       .then(data => {
         setLoading(false);
         console.log('Register success:', data);
-        alert('Registrasi berhasil! Silakan login.');
-        setIsActive(false); // switch to login after successful registration
+        alert.showSuccess('Registration Success!', 'Registrasi berhasil! Silakan login.');
+        setTimeout(() => setIsActive(false), 1500); // switch to login after successful registration
         // reset register form
         setRegisterName('');
         setRegisterEmail('');
@@ -536,6 +539,15 @@ const LoginPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={alert.alert.isOpen}
+        onClose={alert.hideAlert}
+        title={alert.alert.title}
+        message={alert.alert.message}
+        type={alert.alert.type}
+      />
     </>
   );
 };

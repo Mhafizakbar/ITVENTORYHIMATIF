@@ -1,10 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Search, 
+import FormModal, { FormInput, FormSelect } from '../../components/FormModal';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import AlertModal from '../../components/AlertModal';
+import { useModal, useAlert, useConfirm } from '../../hooks/useModal';
+import {
+  getCurrentDate,
+  getMinReturnDate,
+  validateLoanDates,
+  formatDateShort,
+  getLoanStatus
+} from '../../utils/dateUtils';
+import { DateHeader } from '../../components/RealTimeDate';
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Search,
   FileText,
   User,
   Calendar,
@@ -22,13 +34,19 @@ const AdminPeminjaman = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showModal, setShowModal] = useState(false);
   const [editingPeminjaman, setEditingPeminjaman] = useState(null);
   const [formData, setFormData] = useState({
     id_pengguna: '',
+    tanggal_pinjam: getCurrentDate(),
     tanggal_kembali: '',
     status: 'aktif'
   });
+  const [submitLoading, setSubmitLoading] = useState(false);
+
+  // Modal hooks
+  const modal = useModal();
+  const alert = useAlert();
+  const confirm = useConfirm();
 
   useEffect(() => {
     fetchData();
@@ -117,6 +135,8 @@ const AdminPeminjaman = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitLoading(true);
+
     try {
       const url = editingPeminjaman
         ? `https://pweb-be-production.up.railway.app/peminjaman/${editingPeminjaman.id_peminjaman}`
@@ -149,50 +169,74 @@ const AdminPeminjaman = () => {
       }
 
       await fetchData();
-      setShowModal(false);
+      modal.closeModal();
       setEditingPeminjaman(null);
       setFormData({ id_pengguna: '', tanggal_kembali: '', status: 'aktif' });
 
       const message = isStatusChangedToSelesai
         ? 'Peminjaman updated successfully! Stok barang telah dikembalikan.'
         : `Peminjaman ${editingPeminjaman ? 'updated' : 'created'} successfully!`;
-      alert(message);
+
+      alert.showSuccess('Success!', message);
     } catch (err) {
       console.error('Error saving peminjaman:', err);
-      alert(`Failed to ${editingPeminjaman ? 'update' : 'create'} peminjaman`);
+      alert.showError(
+        'Error!',
+        `Failed to ${editingPeminjaman ? 'update' : 'create'} peminjaman`
+      );
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
-  const handleDelete = async (peminjamanId) => {
-    if (!confirm('Are you sure you want to delete this peminjaman?')) return;
+  const handleDelete = (peminjamanId, userName) => {
+    confirm.showConfirm(
+      'Delete Peminjaman',
+      `Are you sure you want to delete peminjaman for "${userName}"? This action cannot be undone.`,
+      async () => {
+        try {
+          const response = await fetch(`https://pweb-be-production.up.railway.app/peminjaman/${peminjamanId}`, {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+          });
 
-    try {
-      const response = await fetch(`https://pweb-be-production.up.railway.app/peminjaman/${peminjamanId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
-      });
+          if (!response.ok) {
+            throw new Error('Failed to delete peminjaman');
+          }
 
-      if (!response.ok) {
-        throw new Error('Failed to delete peminjaman');
-      }
-
-      await fetchData();
-      alert('Peminjaman deleted successfully!');
-    } catch (err) {
-      console.error('Error deleting peminjaman:', err);
-      alert('Failed to delete peminjaman');
-    }
+          await fetchData();
+          alert.showSuccess('Success!', 'Peminjaman deleted successfully!');
+        } catch (err) {
+          console.error('Error deleting peminjaman:', err);
+          alert.showError('Error!', 'Failed to delete peminjaman');
+        }
+      },
+      'danger'
+    );
   };
 
   const handleEdit = (item) => {
     setEditingPeminjaman(item);
     setFormData({
       id_pengguna: item.id_pengguna?.toString() || '',
+      tanggal_pinjam: item.tanggal_pinjam ? item.tanggal_pinjam.split('T')[0] : getCurrentDate(),
       tanggal_kembali: item.tanggal_kembali ? item.tanggal_kembali.split('T')[0] : '',
       status: item.status || 'aktif'
     });
-    setShowModal(true);
+    modal.openModal();
+  };
+
+  const handleAddNew = () => {
+    setEditingPeminjaman(null);
+    const today = getCurrentDate();
+    setFormData({
+      id_pengguna: '',
+      tanggal_pinjam: today,
+      tanggal_kembali: '',
+      status: 'aktif'
+    });
+    modal.openModal();
   };
 
   const getUserName = (id_pengguna) => {
@@ -236,22 +280,24 @@ const AdminPeminjaman = () => {
       <div className="space-y-6">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Peminjaman Management</h1>
               <p className="text-gray-600 mt-2">Manage borrowing transactions</p>
             </div>
-            <button
-              onClick={() => {
-                setEditingPeminjaman(null);
-                setFormData({ id_pengguna: '', tanggal_kembali: '', status: 'aktif' });
-                setShowModal(true);
-              }}
-              className="bg-[#096b68] text-white px-4 py-2 rounded-lg hover:bg-[#004d49] transition-colors duration-200 flex items-center"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Add Peminjaman
-            </button>
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              {/* Real-time date display */}
+              <DateHeader />
+
+              <button
+                onClick={handleAddNew}
+                className="bg-[#096b68] text-white px-4 py-2 rounded-lg hover:bg-[#004d49] transition-colors duration-200 flex items-center"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Add Peminjaman
+              </button>
+            </div>
           </div>
         </div>
 
@@ -316,10 +362,10 @@ const AdminPeminjaman = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {item.tanggal_pinjam ? new Date(item.tanggal_pinjam).toLocaleDateString() : '-'}
+                        {formatDateShort(item.tanggal_pinjam, true)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {item.tanggal_kembali ? new Date(item.tanggal_kembali).toLocaleDateString() : '-'}
+                        {formatDateShort(item.tanggal_kembali, true)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(item.status)}`}>
@@ -335,7 +381,7 @@ const AdminPeminjaman = () => {
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(item.id_peminjaman)}
+                          onClick={() => handleDelete(item.id_peminjaman, getUserName(item.id_pengguna))}
                           className="text-red-600 hover:text-red-900"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -350,71 +396,79 @@ const AdminPeminjaman = () => {
         </div>
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">
-              {editingPeminjaman ? 'Edit Peminjaman' : 'Add New Peminjaman'}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">User</label>
-                <select
-                  value={formData.id_pengguna}
-                  onChange={(e) => setFormData({...formData, id_pengguna: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
-                  required
-                >
-                  <option value="">Select User</option>
-                  {users.map((user) => (
-                    <option key={user.id_pengguna || user.id} value={user.id_pengguna || user.id}>
-                      {user.nama_lengkap || user.nama}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal Kembali</label>
-                <input
-                  type="date"
-                  value={formData.tanggal_kembali}
-                  onChange={(e) => setFormData({...formData, tanggal_kembali: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({...formData, status: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
-                >
-                  <option value="aktif">Aktif</option>
-                  <option value="selesai">Selesai</option>
-                  <option value="terlambat">Terlambat</option>
-                </select>
-              </div>
-              <div className="flex justify-end space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#096b68] text-white rounded-lg hover:bg-[#004d49]"
-                >
-                  {editingPeminjaman ? 'Update' : 'Create'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Form Modal */}
+      <FormModal
+        isOpen={modal.isOpen}
+        onClose={modal.closeModal}
+        title={editingPeminjaman ? 'Edit Peminjaman' : 'Add New Peminjaman'}
+        onSubmit={handleSubmit}
+        submitText={editingPeminjaman ? 'Update' : 'Create'}
+        loading={submitLoading}
+      >
+        <FormSelect
+          label="User"
+          value={formData.id_pengguna}
+          onChange={(e) => setFormData({...formData, id_pengguna: e.target.value})}
+          required
+        >
+          <option value="">Select User</option>
+          {users.map((user) => (
+            <option key={user.id_pengguna || user.id} value={user.id_pengguna || user.id}>
+              {user.nama_lengkap || user.nama}
+            </option>
+          ))}
+        </FormSelect>
+
+        <FormInput
+          label="Tanggal Peminjaman"
+          type="date"
+          value={formData.tanggal_pinjam}
+          onChange={(e) => setFormData({...formData, tanggal_pinjam: e.target.value})}
+          min={getCurrentDate()}
+          required
+        />
+
+        <FormInput
+          label="Tanggal Kembali"
+          type="date"
+          value={formData.tanggal_kembali}
+          onChange={(e) => setFormData({...formData, tanggal_kembali: e.target.value})}
+          min={getMinReturnDate(formData.tanggal_pinjam)}
+          required
+        />
+
+        <FormSelect
+          label="Status"
+          value={formData.status}
+          onChange={(e) => setFormData({...formData, status: e.target.value})}
+        >
+          <option value="aktif">Aktif</option>
+          <option value="selesai">Selesai</option>
+          <option value="terlambat">Terlambat</option>
+        </FormSelect>
+      </FormModal>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirm.confirm.isOpen}
+        onClose={confirm.hideConfirm}
+        onConfirm={confirm.handleConfirm}
+        title={confirm.confirm.title}
+        message={confirm.confirm.message}
+        type={confirm.confirm.type}
+        loading={confirm.confirm.loading}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={alert.alert.isOpen}
+        onClose={alert.hideAlert}
+        title={alert.alert.title}
+        message={alert.alert.message}
+        type={alert.alert.type}
+      />
     </AdminLayout>
   );
 };

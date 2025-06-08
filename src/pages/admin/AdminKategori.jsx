@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Search, 
+import FormModal, { FormInput } from '../../components/FormModal';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import AlertModal from '../../components/AlertModal';
+import { useModal, useAlert, useConfirm } from '../../hooks/useModal';
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Search,
   Tag,
   Hash,
   Loader2,
@@ -16,11 +20,16 @@ const AdminKategori = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showModal, setShowModal] = useState(false);
   const [editingKategori, setEditingKategori] = useState(null);
   const [formData, setFormData] = useState({
     nama_kategori: ''
   });
+  const [submitLoading, setSubmitLoading] = useState(false);
+
+  // Modal hooks
+  const modal = useModal();
+  const alert = useAlert();
+  const confirm = useConfirm();
 
   useEffect(() => {
     fetchKategori();
@@ -53,13 +62,15 @@ const AdminKategori = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitLoading(true);
+
     try {
-      const url = editingKategori 
+      const url = editingKategori
         ? `https://pweb-be-production.up.railway.app/kategori/${editingKategori.id_kategori}`
         : 'https://pweb-be-production.up.railway.app/kategori';
-      
+
       const method = editingKategori ? 'PUT' : 'POST';
-      
+
       const response = await fetch(url, {
         method,
         credentials: 'include',
@@ -72,37 +83,50 @@ const AdminKategori = () => {
       }
 
       await fetchKategori();
-      setShowModal(false);
+      modal.closeModal();
       setEditingKategori(null);
       setFormData({ nama_kategori: '' });
-      
-      alert(`Kategori ${editingKategori ? 'updated' : 'created'} successfully!`);
+
+      alert.showSuccess(
+        'Success!',
+        `Kategori ${editingKategori ? 'updated' : 'created'} successfully!`
+      );
     } catch (err) {
       console.error('Error saving kategori:', err);
-      alert(`Failed to ${editingKategori ? 'update' : 'create'} kategori`);
+      alert.showError(
+        'Error!',
+        `Failed to ${editingKategori ? 'update' : 'create'} kategori`
+      );
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
-  const handleDelete = async (kategoriId) => {
-    if (!confirm('Are you sure you want to delete this kategori?')) return;
+  const handleDelete = (kategoriId, kategoriName) => {
+    confirm.showConfirm(
+      'Delete Kategori',
+      `Are you sure you want to delete "${kategoriName}"? This action cannot be undone.`,
+      async () => {
+        try {
+          const response = await fetch(`https://pweb-be-production.up.railway.app/kategori/${kategoriId}`, {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+          });
 
-    try {
-      const response = await fetch(`https://pweb-be-production.up.railway.app/kategori/${kategoriId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
-      });
+          if (!response.ok) {
+            throw new Error('Failed to delete kategori');
+          }
 
-      if (!response.ok) {
-        throw new Error('Failed to delete kategori');
-      }
-
-      await fetchKategori();
-      alert('Kategori deleted successfully!');
-    } catch (err) {
-      console.error('Error deleting kategori:', err);
-      alert('Failed to delete kategori');
-    }
+          await fetchKategori();
+          alert.showSuccess('Success!', 'Kategori deleted successfully!');
+        } catch (err) {
+          console.error('Error deleting kategori:', err);
+          alert.showError('Error!', 'Failed to delete kategori');
+        }
+      },
+      'danger'
+    );
   };
 
   const handleEdit = (item) => {
@@ -110,7 +134,13 @@ const AdminKategori = () => {
     setFormData({
       nama_kategori: item.nama_kategori || ''
     });
-    setShowModal(true);
+    modal.openModal();
+  };
+
+  const handleAddNew = () => {
+    setEditingKategori(null);
+    setFormData({ nama_kategori: '' });
+    modal.openModal();
   };
 
   const filteredKategori = kategori.filter(item =>
@@ -128,11 +158,7 @@ const AdminKategori = () => {
               <p className="text-gray-600 mt-2">Manage item categories</p>
             </div>
             <button
-              onClick={() => {
-                setEditingKategori(null);
-                setFormData({ nama_kategori: '' });
-                setShowModal(true);
-              }}
+              onClick={handleAddNew}
               className="bg-[#096b68] text-white px-4 py-2 rounded-lg hover:bg-[#004d49] transition-colors duration-200 flex items-center"
             >
               <Plus className="h-5 w-5 mr-2" />
@@ -185,7 +211,7 @@ const AdminKategori = () => {
                         <Edit className="h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => handleDelete(item.id_kategori)}
+                        onClick={() => handleDelete(item.id_kategori, item.nama_kategori)}
                         className="text-red-600 hover:text-red-900 p-1"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -258,7 +284,7 @@ const AdminKategori = () => {
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(item.id_kategori)}
+                          onClick={() => handleDelete(item.id_kategori, item.nama_kategori)}
                           className="text-red-600 hover:text-red-900"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -273,44 +299,46 @@ const AdminKategori = () => {
         </div>
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">
-              {editingKategori ? 'Edit Kategori' : 'Add New Kategori'}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nama Kategori</label>
-                <input
-                  type="text"
-                  value={formData.nama_kategori}
-                  onChange={(e) => setFormData({...formData, nama_kategori: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
-                  required
-                  placeholder="Enter kategori name"
-                />
-              </div>
-              <div className="flex justify-end space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#096b68] text-white rounded-lg hover:bg-[#004d49]"
-                >
-                  {editingKategori ? 'Update' : 'Create'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Form Modal */}
+      <FormModal
+        isOpen={modal.isOpen}
+        onClose={modal.closeModal}
+        title={editingKategori ? 'Edit Kategori' : 'Add New Kategori'}
+        onSubmit={handleSubmit}
+        submitText={editingKategori ? 'Update' : 'Create'}
+        loading={submitLoading}
+      >
+        <FormInput
+          label="Nama Kategori"
+          type="text"
+          value={formData.nama_kategori}
+          onChange={(e) => setFormData({...formData, nama_kategori: e.target.value})}
+          required
+          placeholder="Enter kategori name"
+        />
+      </FormModal>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirm.confirm.isOpen}
+        onClose={confirm.hideConfirm}
+        onConfirm={confirm.handleConfirm}
+        title={confirm.confirm.title}
+        message={confirm.confirm.message}
+        type={confirm.confirm.type}
+        loading={confirm.confirm.loading}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={alert.alert.isOpen}
+        onClose={alert.hideAlert}
+        title={alert.alert.title}
+        message={alert.alert.message}
+        type={alert.alert.type}
+      />
     </AdminLayout>
   );
 };

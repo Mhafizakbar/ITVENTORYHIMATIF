@@ -2,15 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
+import AlertModal from '../components/AlertModal';
+import { useAlert } from '../hooks/useModal';
+import {
+  getCurrentDate,
+  getMinReturnDate,
+  validateLoanDates,
+  formatDateToIndonesian
+} from '../utils/dateUtils';
+import { FormDateDisplay, DateStatus } from '../components/RealTimeDate';
+import { TimezoneInfo } from '../components/IndonesiaTimezone';
 import { Loader2, AlertCircle } from 'lucide-react';
 
 const Loan = () => {
   const navigate = useNavigate();
   const { user, isLoggedIn } = useAuth();
+  const alert = useAlert();
 
   const [formData, setFormData] = useState({
     nama: '',
-    tanggalPinjam: '',
+    tanggalPinjam: getCurrentDate(), // Auto-set ke hari ini menggunakan utility
     tanggalKembali: '',
     barangDipinjam: [],
   });
@@ -59,6 +70,13 @@ const Loan = () => {
     };
 
     fetchBarang();
+
+    // Set tanggal peminjaman ke hari ini setiap kali komponen dimount
+    const today = getCurrentDate();
+    setFormData(prev => ({
+      ...prev,
+      tanggalPinjam: today
+    }));
   }, [isLoggedIn, navigate]);
 
   const handleInputChange = (e) => {
@@ -189,27 +207,26 @@ const Loan = () => {
 
   // Check if user is logged in
   if (!isLoggedIn()) {
-    alert('Anda harus login terlebih dahulu!');
-    navigate('/');
+    alert.showError('Login Required', 'Anda harus login terlebih dahulu!');
+    setTimeout(() => navigate('/'), 2000);
     return;
   }
 
   // Validasi form
   if (!formData.nama || !formData.tanggalPinjam || !formData.tanggalKembali) {
-    alert('Mohon lengkapi semua field yang wajib diisi!');
+    alert.showWarning('Form Incomplete', 'Mohon lengkapi semua field yang wajib diisi!');
     return;
   }
 
   if (formData.barangDipinjam.length === 0) {
-    alert('Mohon tambahkan minimal satu barang untuk dipinjam!');
+    alert.showWarning('No Items', 'Mohon tambahkan minimal satu barang untuk dipinjam!');
     return;
   }
 
-  const tglPinjam = new Date(formData.tanggalPinjam);
-  const tglKembali = new Date(formData.tanggalKembali);
-
-  if (tglKembali <= tglPinjam) {
-    alert('Tanggal kembali harus setelah tanggal peminjaman!');
+  // Validasi tanggal menggunakan utility function
+  const dateValidation = validateLoanDates(formData.tanggalPinjam, formData.tanggalKembali);
+  if (!dateValidation.isValid) {
+    alert.showWarning('Invalid Date', dateValidation.message);
     return;
   }
 
@@ -270,12 +287,16 @@ const Loan = () => {
     // Update stok barang setelah peminjaman berhasil
     await updateStokBarang();
 
-    alert('Formulir peminjaman berhasil disubmit! Stok barang telah diperbarui.');
+    alert.showSuccess(
+      'Success!',
+      'Formulir peminjaman berhasil disubmit! Stok barang telah diperbarui.'
+    );
 
-    // Reset form
+    // Reset form dengan tanggal peminjaman tetap hari ini
+    const today = getCurrentDate();
     setFormData({
       nama: '',
-      tanggalPinjam: '',
+      tanggalPinjam: today,
       tanggalKembali: '',
       barangDipinjam: [],
     });
@@ -283,9 +304,9 @@ const Loan = () => {
     console.error('Error submitting peminjaman:', err);
     if (err.message.includes('login') || err.message.includes('Sesi')) {
       // Redirect to login if authentication error
-      navigate('/');
+      setTimeout(() => navigate('/'), 2000);
     }
-    alert(`Terjadi kesalahan: ${err.message}`);
+    alert.showError('Error!', `Terjadi kesalahan: ${err.message}`);
   }
 };
 
@@ -519,6 +540,9 @@ const Loan = () => {
                 <span className="text-[#096B68]">Formulir Peminjaman Barang</span>
               </h2>
 
+              {/* Timezone Info */}
+              <TimezoneInfo className="mb-6 animate-fade-in delay-100" />
+
               <div className="space-y-6 sm:space-y-8">
                 {/* Data Peminjam */}
                 <div className="bg-gradient-to-r from-[#90D1CA] to-[#FFFBDE] p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl border-l-4 border-[#096B68] shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in delay-200">
@@ -543,13 +567,25 @@ const Loan = () => {
                       <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                         Tanggal Peminjaman *
                       </label>
+
+                      {/* Real-time date display */}
+                      <FormDateDisplay
+                        label=""
+                        showTimezone={true}
+                        className="mb-2 p-3 bg-blue-50 rounded-lg border border-blue-200"
+                      />
+
                       <input
                         type="date"
                         name="tanggalPinjam"
                         value={formData.tanggalPinjam}
                         onChange={handleInputChange}
+                        min={getCurrentDate()}
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-blue-400 text-sm sm:text-base"
                       />
+
+                      {/* Date status indicator */}
+                      <DateStatus className="mt-1" />
                     </div>
                     <div>
                       <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
@@ -560,6 +596,7 @@ const Loan = () => {
                         name="tanggalKembali"
                         value={formData.tanggalKembali}
                         onChange={handleInputChange}
+                        min={getMinReturnDate(formData.tanggalPinjam)}
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-blue-400 text-sm sm:text-base"
                       />
                     </div>
@@ -718,6 +755,15 @@ const Loan = () => {
           </div>
         </div>
       </div>
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={alert.alert.isOpen}
+        onClose={alert.hideAlert}
+        title={alert.alert.title}
+        message={alert.alert.message}
+        type={alert.alert.type}
+      />
     </>
   );
 };

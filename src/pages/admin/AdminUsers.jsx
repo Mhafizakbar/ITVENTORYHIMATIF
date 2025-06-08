@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Search, 
+import FormModal, { FormInput, FormSelect } from '../../components/FormModal';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import AlertModal from '../../components/AlertModal';
+import { useModal, useAlert, useConfirm } from '../../hooks/useModal';
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Search,
   User,
   Mail,
   Phone,
@@ -19,7 +23,6 @@ const AdminUsers = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [formData, setFormData] = useState({
     nama: '',
@@ -28,6 +31,12 @@ const AdminUsers = () => {
     no_telepon: '',
     role: 'user'
   });
+  const [submitLoading, setSubmitLoading] = useState(false);
+
+  // Modal hooks
+  const modal = useModal();
+  const alert = useAlert();
+  const confirm = useConfirm();
 
   useEffect(() => {
     fetchUsers();
@@ -80,13 +89,15 @@ const AdminUsers = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitLoading(true);
+
     try {
-      const url = editingUser 
+      const url = editingUser
         ? `https://pweb-be-production.up.railway.app/user/${editingUser.id_pengguna}`
         : 'https://pweb-be-production.up.railway.app/user';
-      
+
       const method = editingUser ? 'PUT' : 'POST';
-      
+
       const response = await fetch(url, {
         method,
         credentials: 'include',
@@ -99,37 +110,50 @@ const AdminUsers = () => {
       }
 
       await fetchUsers();
-      setShowModal(false);
+      modal.closeModal();
       setEditingUser(null);
       setFormData({ nama: '', email: '', password: '', no_telepon: '', role: 'user' });
-      
-      alert(`User ${editingUser ? 'updated' : 'created'} successfully!`);
+
+      alert.showSuccess(
+        'Success!',
+        `User ${editingUser ? 'updated' : 'created'} successfully!`
+      );
     } catch (err) {
       console.error('Error saving user:', err);
-      alert(`Failed to ${editingUser ? 'update' : 'create'} user`);
+      alert.showError(
+        'Error!',
+        `Failed to ${editingUser ? 'update' : 'create'} user`
+      );
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
-  const handleDelete = async (userId) => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
+  const handleDelete = (userId, userName) => {
+    confirm.showConfirm(
+      'Delete User',
+      `Are you sure you want to delete "${userName}"? This action cannot be undone.`,
+      async () => {
+        try {
+          const response = await fetch(`https://pweb-be-production.up.railway.app/user/${userId}`, {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+          });
 
-    try {
-      const response = await fetch(`https://pweb-be-production.up.railway.app/user/${userId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
-      });
+          if (!response.ok) {
+            throw new Error('Failed to delete user');
+          }
 
-      if (!response.ok) {
-        throw new Error('Failed to delete user');
-      }
-
-      await fetchUsers();
-      alert('User deleted successfully!');
-    } catch (err) {
-      console.error('Error deleting user:', err);
-      alert('Failed to delete user');
-    }
+          await fetchUsers();
+          alert.showSuccess('Success!', 'User deleted successfully!');
+        } catch (err) {
+          console.error('Error deleting user:', err);
+          alert.showError('Error!', 'Failed to delete user');
+        }
+      },
+      'danger'
+    );
   };
 
   const handleEdit = (user) => {
@@ -141,7 +165,13 @@ const AdminUsers = () => {
       no_telepon: user.no_telepon || '',
       role: user.role || 'user'
     });
-    setShowModal(true);
+    modal.openModal();
+  };
+
+  const handleAddNew = () => {
+    setEditingUser(null);
+    setFormData({ nama: '', email: '', password: '', no_telepon: '', role: 'user' });
+    modal.openModal();
   };
 
   const filteredUsers = users.filter(user =>
@@ -160,11 +190,7 @@ const AdminUsers = () => {
               <p className="text-gray-600 mt-2">Manage system users</p>
             </div>
             <button
-              onClick={() => {
-                setEditingUser(null);
-                setFormData({ nama: '', email: '', password: '', no_telepon: '', role: 'user' });
-                setShowModal(true);
-              }}
+              onClick={handleAddNew}
               className="bg-[#096b68] text-white px-4 py-2 rounded-lg hover:bg-[#004d49] transition-colors duration-200 flex items-center"
             >
               <Plus className="h-5 w-5 mr-2" />
@@ -250,7 +276,7 @@ const AdminUsers = () => {
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(user.id_pengguna)}
+                          onClick={() => handleDelete(user.id_pengguna, user.nama)}
                           className="text-red-600 hover:text-red-900"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -265,85 +291,77 @@ const AdminUsers = () => {
         </div>
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">
-              {editingUser ? 'Edit User' : 'Add New User'}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input
-                  type="text"
-                  value={formData.nama}
-                  onChange={(e) => setFormData({...formData, nama: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password {editingUser && '(leave blank to keep current)'}
-                </label>
-                <input
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
-                  required={!editingUser}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                <input
-                  type="text"
-                  value={formData.no_telepon}
-                  onChange={(e) => setFormData({...formData, no_telepon: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                <select
-                  value={formData.role}
-                  onChange={(e) => setFormData({...formData, role: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
-                >
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-              <div className="flex justify-end space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#096b68] text-white rounded-lg hover:bg-[#004d49]"
-                >
-                  {editingUser ? 'Update' : 'Create'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Form Modal */}
+      <FormModal
+        isOpen={modal.isOpen}
+        onClose={modal.closeModal}
+        title={editingUser ? 'Edit User' : 'Add New User'}
+        onSubmit={handleSubmit}
+        submitText={editingUser ? 'Update' : 'Create'}
+        loading={submitLoading}
+      >
+        <FormInput
+          label="Name"
+          type="text"
+          value={formData.nama}
+          onChange={(e) => setFormData({...formData, nama: e.target.value})}
+          required
+        />
+
+        <FormInput
+          label="Email"
+          type="email"
+          value={formData.email}
+          onChange={(e) => setFormData({...formData, email: e.target.value})}
+          required
+        />
+
+        <FormInput
+          label={`Password ${editingUser ? '(leave blank to keep current)' : ''}`}
+          type="password"
+          value={formData.password}
+          onChange={(e) => setFormData({...formData, password: e.target.value})}
+          required={!editingUser}
+        />
+
+        <FormInput
+          label="Phone"
+          type="text"
+          value={formData.no_telepon}
+          onChange={(e) => setFormData({...formData, no_telepon: e.target.value})}
+        />
+
+        <FormSelect
+          label="Role"
+          value={formData.role}
+          onChange={(e) => setFormData({...formData, role: e.target.value})}
+        >
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </FormSelect>
+      </FormModal>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirm.confirm.isOpen}
+        onClose={confirm.hideConfirm}
+        onConfirm={confirm.handleConfirm}
+        title={confirm.confirm.title}
+        message={confirm.confirm.message}
+        type={confirm.confirm.type}
+        loading={confirm.confirm.loading}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={alert.alert.isOpen}
+        onClose={alert.hideAlert}
+        title={alert.alert.title}
+        message={alert.alert.message}
+        type={alert.alert.type}
+      />
     </AdminLayout>
   );
 };

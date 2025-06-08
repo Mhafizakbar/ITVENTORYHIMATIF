@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Import modal animations */
+@import "./styles/modal-animations.css";
+
 /* Mobile-first responsive utilities */
 @layer utilities {
   /* Ensure proper touch targets on mobile */

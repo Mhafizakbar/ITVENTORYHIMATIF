@@ -15,6 +15,7 @@ import AdminDetailPeminjaman from './pages/admin/AdminDetailPeminjaman';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminTestLogin from './components/AdminTestLogin';
 import Profile from './pages/Profile';
+import ModalDemo from './components/ModalDemo';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/admin-test" element={<AdminTestLogin />} />
+          <Route path="/modal-demo" element={<ModalDemo />} />
           <Route path="/home" element={
             <ProtectedRoute>
               <HomePage />
