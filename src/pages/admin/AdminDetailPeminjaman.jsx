@@ -17,6 +17,7 @@ const AdminDetailPeminjaman = () => {
   const [details, setDetails] = useState([]);
   const [peminjaman, setPeminjaman] = useState([]);
   const [barang, setBarang] = useState([]);
+  const [users, setUsers] = useState([]); // Tambah state untuk users
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -37,8 +38,8 @@ const AdminDetailPeminjaman = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      const [detailRes, peminjamanRes, barangRes] = await Promise.all([
+
+      const [detailRes, peminjamanRes, barangRes, usersRes] = await Promise.all([
         fetch('https://pweb-be-production.up.railway.app/detail', {
           method: 'GET',
           credentials: 'include',
@@ -53,16 +54,23 @@ const AdminDetailPeminjaman = () => {
           method: 'GET',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' }
+        }),
+        fetch('https://pweb-be-production.up.railway.app/user', {
+          method: 'GET',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
         })
       ]);
 
       const detailData = detailRes.ok ? await detailRes.json() : [];
       const peminjamanData = peminjamanRes.ok ? await peminjamanRes.json() : [];
       const barangData = barangRes.ok ? await barangRes.json() : [];
-      
+      const usersData = usersRes.ok ? await usersRes.json() : [];
+
       setDetails(Array.isArray(detailData) ? detailData : []);
       setPeminjaman(Array.isArray(peminjamanData) ? peminjamanData : []);
       setBarang(Array.isArray(barangData) ? barangData : []);
+      setUsers(Array.isArray(usersData) ? usersData : []);
 
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -147,15 +155,37 @@ const AdminDetailPeminjaman = () => {
     return item ? item.nama_barang : `Barang ${id_barang}`;
   };
 
-  const getPeminjamanInfo = (id_peminjaman) => {
-    const pinjam = peminjaman.find(p => p.id_peminjaman === id_peminjaman);
-    return pinjam ? `#${pinjam.id_peminjaman}` : `#${id_peminjaman}`;
+  const getUserName = (id_pengguna) => {
+    const user = users.find(u => u.id_pengguna === id_pengguna || u.id === id_pengguna);
+    return user ? user.nama_lengkap || user.nama : `User ${id_pengguna}`;
   };
 
-  const filteredDetails = details.filter(item =>
-    getBarangName(item.id_barang).toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.keterangan?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const getPeminjamanInfo = (id_peminjaman) => {
+    const pinjam = peminjaman.find(p => p.id_peminjaman === id_peminjaman);
+    if (pinjam) {
+      const userName = getUserName(pinjam.id_pengguna);
+      return {
+        id: pinjam.id_peminjaman,
+        userName: userName,
+        userId: pinjam.id_pengguna
+      };
+    }
+    return {
+      id: id_peminjaman,
+      userName: `User Unknown`,
+      userId: null
+    };
+  };
+
+  const filteredDetails = details.filter(item => {
+    const peminjamanInfo = getPeminjamanInfo(item.id_peminjaman);
+    return (
+      getBarangName(item.id_barang).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.keterangan?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      peminjamanInfo.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.id_detail?.toString().includes(searchTerm.toLowerCase())
+    );
+  });
 
   return (
     <AdminLayout>
@@ -187,7 +217,7 @@ const AdminDetailPeminjaman = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
               type="text"
-              placeholder="Search details..."
+              placeholder="Search by user name, item name, or notes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
@@ -215,7 +245,7 @@ const AdminDetailPeminjaman = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Detail</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Peminjaman</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Peminjaman & User</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Barang</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
@@ -235,7 +265,10 @@ const AdminDetailPeminjaman = () => {
                           </div>
                           <div className="ml-3">
                             <div className="text-sm font-medium text-gray-900">
-                              {getPeminjamanInfo(item.id_peminjaman)}
+                              #{getPeminjamanInfo(item.id_peminjaman).id}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {getPeminjamanInfo(item.id_peminjaman).userName}
                             </div>
                           </div>
                         </div>
@@ -305,7 +338,7 @@ const AdminDetailPeminjaman = () => {
                   <option value="">Select Peminjaman</option>
                   {peminjaman.map((pinjam) => (
                     <option key={pinjam.id_peminjaman} value={pinjam.id_peminjaman}>
-                      #{pinjam.id_peminjaman} - User {pinjam.id_pengguna}
+                      #{pinjam.id_peminjaman} - {getUserName(pinjam.id_pengguna)}
                     </option>
                   ))}
                 </select>

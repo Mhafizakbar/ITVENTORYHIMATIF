@@ -14,6 +14,7 @@ import AdminPeminjaman from './pages/admin/AdminPeminjaman';
 import AdminDetailPeminjaman from './pages/admin/AdminDetailPeminjaman';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminTestLogin from './components/AdminTestLogin';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -22,10 +23,31 @@ function App() {
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/admin-test" element={<AdminTestLogin />} />
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/barang" element={<Barang />} />
-          <Route path="/loan" element={<Loan />} />
-          <Route path="/detail" element={<DetailPeminjaman />} />
+          <Route path="/home" element={
+            <ProtectedRoute>
+              <HomePage />
+            </ProtectedRoute>
+          } />
+          <Route path="/barang" element={
+            <ProtectedRoute>
+              <Barang />
+            </ProtectedRoute>
+          } />
+          <Route path="/loan" element={
+            <ProtectedRoute>
+              <Loan />
+            </ProtectedRoute>
+          } />
+          <Route path="/detail" element={
+            <ProtectedRoute>
+              <DetailPeminjaman />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
 
           {/* Admin Routes - Protected */}
           <Route path="/admin" element={

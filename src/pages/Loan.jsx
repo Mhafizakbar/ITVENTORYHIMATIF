@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { useAuth } from '../context/AuthContext';
 import { Loader2, AlertCircle } from 'lucide-react';
 
 const Loan = () => {
+  const navigate = useNavigate();
+  const { user, isLoggedIn } = useAuth();
+
   const [formData, setFormData] = useState({
     nama: '',
     tanggalPinjam: '',
@@ -18,8 +23,14 @@ const Loan = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch data barang dari API
+  // Check authentication and fetch data barang dari API
   useEffect(() => {
+    // Check if user is logged in
+    if (!isLoggedIn()) {
+      navigate('/');
+      return;
+    }
+
     const fetchBarang = async () => {
       try {
         setLoading(true);
@@ -48,7 +59,7 @@ const Loan = () => {
     };
 
     fetchBarang();
-  }, []);
+  }, [isLoggedIn, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -71,19 +82,58 @@ const Loan = () => {
       const selectedBarang = barangTersedia.find(
         (barang) => barang.id_barang === parseInt(barangBaru.id_barang)
       );
-      setFormData((prev) => ({
-        ...prev,
-        barangDipinjam: [
-          ...prev.barangDipinjam,
-          {
-            id: Date.now(),
-            id_barang: barangBaru.id_barang,
-            namaBarang: selectedBarang?.nama_barang || 'Unknown',
-            jumlah: barangBaru.jumlah,
-            keterangan: barangBaru.keterangan,
-          },
-        ],
-      }));
+
+      // Validasi stok tersedia
+      if (!selectedBarang) {
+        alert('Barang tidak ditemukan!');
+        return;
+      }
+
+      const stokTersedia = selectedBarang.jumlah || 0;
+      const jumlahPinjam = parseInt(barangBaru.jumlah);
+
+      // Cek apakah barang sudah ada di daftar peminjaman
+      const existingItem = formData.barangDipinjam.find(
+        item => parseInt(item.id_barang) === parseInt(barangBaru.id_barang)
+      );
+
+      const totalJumlahPinjam = existingItem ?
+        existingItem.jumlah + jumlahPinjam :
+        jumlahPinjam;
+
+      if (totalJumlahPinjam > stokTersedia) {
+        alert(`Stok tidak mencukupi! Stok tersedia: ${stokTersedia}, Total yang akan dipinjam: ${totalJumlahPinjam}`);
+        return;
+      }
+
+      if (existingItem) {
+        // Update jumlah jika barang sudah ada
+        setFormData((prev) => ({
+          ...prev,
+          barangDipinjam: prev.barangDipinjam.map(item =>
+            parseInt(item.id_barang) === parseInt(barangBaru.id_barang)
+              ? { ...item, jumlah: totalJumlahPinjam, keterangan: barangBaru.keterangan }
+              : item
+          ),
+        }));
+      } else {
+        // Tambah barang baru
+        setFormData((prev) => ({
+          ...prev,
+          barangDipinjam: [
+            ...prev.barangDipinjam,
+            {
+              id: Date.now(),
+              id_barang: barangBaru.id_barang,
+              namaBarang: selectedBarang?.nama_barang || 'Unknown',
+              jumlah: jumlahPinjam,
+              stokTersedia: stokTersedia,
+              keterangan: barangBaru.keterangan,
+            },
+          ],
+        }));
+      }
+
       setBarangBaru({
         id_barang: '',
         jumlah: 1,
@@ -99,8 +149,50 @@ const Loan = () => {
     }));
   };
 
+  const updateStokBarang = async () => {
+    try {
+      // Update stok untuk setiap barang yang dipinjam
+      for (const barang of formData.barangDipinjam) {
+        const selectedBarang = barangTersedia.find(
+          (item) => item.id_barang === parseInt(barang.id_barang)
+        );
+
+        if (selectedBarang) {
+          const newStok = selectedBarang.jumlah - parseInt(barang.jumlah);
+
+          const updateResponse = await fetch(`https://pweb-be-production.up.railway.app/barang/${barang.id_barang}`, {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              nama_barang: selectedBarang.nama_barang,
+              id_kategori: selectedBarang.id_kategori,
+              jumlah: newStok,
+              deskripsi: selectedBarang.deskripsi || ''
+            }),
+          });
+
+          if (!updateResponse.ok) {
+            console.error(`Failed to update stock for barang ${barang.id_barang}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error updating stock:', error);
+    }
+  };
+
   const handleSubmit = async (e) => {
   e.preventDefault();
+
+  // Check if user is logged in
+  if (!isLoggedIn()) {
+    alert('Anda harus login terlebih dahulu!');
+    navigate('/');
+    return;
+  }
 
   // Validasi form
   if (!formData.nama || !formData.tanggalPinjam || !formData.tanggalKembali) {
@@ -121,18 +213,40 @@ const Loan = () => {
     return;
   }
 
-  // Format data untuk dikirim ke API - SESUAIKAN DENGAN BACKEND
-  const peminjamanData = {
-    id_pengguna: 1, // Anda perlu mendapatkan id_pengguna yang benar (misal dari auth/session)
-    tanggal_kembali: formData.tanggalKembali,
-    detail: formData.barangDipinjam.map((barang) => ({
-      id_barang: parseInt(barang.id_barang),
-      jumlah_pinjam: parseInt(barang.jumlah), // Ubah 'jumlah' menjadi 'jumlah_pinjam'
-      keterangan: barang.keterangan || '',
-    })),
-  };
-
   try {
+    // Coba dapatkan user ID dari endpoint users berdasarkan email
+    let userId = 1; // Default fallback
+
+    try {
+      const usersResponse = await fetch('https://pweb-be-production.up.railway.app/user', {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (usersResponse.ok) {
+        const users = await usersResponse.json();
+        const currentUser = users.find(u => u.email === user.email);
+        if (currentUser) {
+          userId = currentUser.id_pengguna || currentUser.id;
+        }
+      }
+    } catch (userFetchError) {
+      console.log('Could not fetch user ID, using default:', userFetchError);
+    }
+
+    // Format data untuk dikirim ke API
+    const peminjamanData = {
+      id_pengguna: userId,
+      tanggal_kembali: formData.tanggalKembali,
+      detail: formData.barangDipinjam.map((barang) => ({
+        id_barang: parseInt(barang.id_barang),
+        jumlah_pinjam: parseInt(barang.jumlah),
+        keterangan: barang.keterangan || '',
+      })),
+    };
+
+    // Submit peminjaman data
     const response = await fetch('https://pweb-be-production.up.railway.app/peminjaman', {
       method: 'POST',
       credentials: 'include',
@@ -143,13 +257,20 @@ const Loan = () => {
     });
 
     if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Sesi Anda telah berakhir. Silakan login ulang.');
+      }
       const errorData = await response.json();
       throw new Error(errorData.error || `Error: ${response.status}`);
     }
 
     const result = await response.json();
     console.log('Peminjaman berhasil:', result);
-    alert('Formulir peminjaman berhasil disubmit!');
+
+    // Update stok barang setelah peminjaman berhasil
+    await updateStokBarang();
+
+    alert('Formulir peminjaman berhasil disubmit! Stok barang telah diperbarui.');
 
     // Reset form
     setFormData({
@@ -160,6 +281,10 @@ const Loan = () => {
     });
   } catch (err) {
     console.error('Error submitting peminjaman:', err);
+    if (err.message.includes('login') || err.message.includes('Sesi')) {
+      // Redirect to login if authentication error
+      navigate('/');
+    }
     alert(`Terjadi kesalahan: ${err.message}`);
   }
 };
@@ -460,7 +585,7 @@ const Loan = () => {
                         <option value="">Pilih Barang</option>
                         {barangTersedia.map((barang) => (
                           <option key={barang.id_barang} value={barang.id_barang}>
-                            {barang.nama_barang}
+                            {barang.nama_barang} (Stok: {barang.jumlah || 0})
                           </option>
                         ))}
                       </select>
@@ -521,7 +646,10 @@ const Loan = () => {
                               Nama Barang
                             </th>
                             <th className="border border-[#096B68] px-6 py-4 text-left font-bold text-white">
-                              Jumlah
+                              Jumlah Pinjam
+                            </th>
+                            <th className="border border-[#096B68] px-6 py-4 text-left font-bold text-white">
+                              Stok Tersedia
                             </th>
                             <th className="border border-[#096B68] px-6 py-4 text-left font-bold text-white">
                               Keterangan
@@ -543,7 +671,16 @@ const Loan = () => {
                               <td className="border border-[#096B68] px-6 py-4 font-bold text-gray-800">
                                 {barang.namaBarang}
                               </td>
-                              <td className="border border-[#096B68] px-6 py-4">{barang.jumlah}</td>
+                              <td className="border border-[#096B68] px-6 py-4">
+                                <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                  {barang.jumlah}
+                                </span>
+                              </td>
+                              <td className="border border-[#096B68] px-6 py-4">
+                                <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                  {barang.stokTersedia || 'N/A'}
+                                </span>
+                              </td>
                               <td className="border border-[#096B68] px-6 py-4 text-gray-600">
                                 {barang.keterangan || '-'}
                               </td>

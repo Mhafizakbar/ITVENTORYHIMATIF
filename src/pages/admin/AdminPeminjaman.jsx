@@ -38,25 +38,25 @@ const AdminPeminjaman = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      const peminjamanRes = await fetch('https://pweb-be-production.up.railway.app/peminjaman', {
-        method: 'GET',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
-      });
 
-      if (!peminjamanRes.ok) {
-        throw new Error('Failed to fetch peminjaman');
-      }
-
-      const peminjamanData = await peminjamanRes.json();
-      setPeminjaman(Array.isArray(peminjamanData) ? peminjamanData : []);
-
-      // Mock users data since user endpoint might not be available
-      setUsers([
-        { id_pengguna: 1, nama: 'Admin User' },
-        { id_pengguna: 2, nama: 'Regular User' }
+      const [peminjamanRes, usersRes] = await Promise.all([
+        fetch('https://pweb-be-production.up.railway.app/peminjaman', {
+          method: 'GET',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        }),
+        fetch('https://pweb-be-production.up.railway.app/user', {
+          method: 'GET',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        })
       ]);
+
+      const peminjamanData = peminjamanRes.ok ? await peminjamanRes.json() : [];
+      const usersData = usersRes.ok ? await usersRes.json() : [];
+
+      setPeminjaman(Array.isArray(peminjamanData) ? peminjamanData : []);
+      setUsers(Array.isArray(usersData) ? usersData : []);
 
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -66,15 +66,69 @@ const AdminPeminjaman = () => {
     }
   };
 
+  const restoreStokBarang = async (id_peminjaman) => {
+    try {
+      // Ambil detail peminjaman untuk mendapatkan barang yang dipinjam
+      const detailResponse = await fetch('https://pweb-be-production.up.railway.app/detail', {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!detailResponse.ok) return;
+
+      const detailData = await detailResponse.json();
+      const peminjamanDetails = detailData.filter(detail => detail.id_peminjaman === id_peminjaman);
+
+      // Ambil data barang untuk update stok
+      const barangResponse = await fetch('https://pweb-be-production.up.railway.app/barang', {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!barangResponse.ok) return;
+
+      const barangData = await barangResponse.json();
+
+      // Update stok untuk setiap barang yang dikembalikan
+      for (const detail of peminjamanDetails) {
+        const barang = barangData.find(b => b.id_barang === detail.id_barang);
+        if (barang) {
+          const newStok = barang.jumlah + detail.jumlah_pinjam;
+
+          await fetch(`https://pweb-be-production.up.railway.app/barang/${detail.id_barang}`, {
+            method: 'PUT',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              nama_barang: barang.nama_barang,
+              id_kategori: barang.id_kategori,
+              jumlah: newStok,
+              deskripsi: barang.deskripsi || ''
+            }),
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error restoring stock:', error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const url = editingPeminjaman 
+      const url = editingPeminjaman
         ? `https://pweb-be-production.up.railway.app/peminjaman/${editingPeminjaman.id_peminjaman}`
         : 'https://pweb-be-production.up.railway.app/peminjaman';
-      
+
       const method = editingPeminjaman ? 'PUT' : 'POST';
-      
+
+      // Cek apakah status berubah menjadi "selesai" untuk mengembalikan stok
+      const isStatusChangedToSelesai = editingPeminjaman &&
+        editingPeminjaman.status !== 'selesai' &&
+        formData.status === 'selesai';
+
       const response = await fetch(url, {
         method,
         credentials: 'include',
@@ -89,12 +143,20 @@ const AdminPeminjaman = () => {
         throw new Error(`Failed to ${editingPeminjaman ? 'update' : 'create'} peminjaman`);
       }
 
+      // Jika status berubah menjadi selesai, kembalikan stok
+      if (isStatusChangedToSelesai) {
+        await restoreStokBarang(editingPeminjaman.id_peminjaman);
+      }
+
       await fetchData();
       setShowModal(false);
       setEditingPeminjaman(null);
       setFormData({ id_pengguna: '', tanggal_kembali: '', status: 'aktif' });
-      
-      alert(`Peminjaman ${editingPeminjaman ? 'updated' : 'created'} successfully!`);
+
+      const message = isStatusChangedToSelesai
+        ? 'Peminjaman updated successfully! Stok barang telah dikembalikan.'
+        : `Peminjaman ${editingPeminjaman ? 'updated' : 'created'} successfully!`;
+      alert(message);
     } catch (err) {
       console.error('Error saving peminjaman:', err);
       alert(`Failed to ${editingPeminjaman ? 'update' : 'create'} peminjaman`);
@@ -134,8 +196,8 @@ const AdminPeminjaman = () => {
   };
 
   const getUserName = (id_pengguna) => {
-    const user = users.find(u => u.id_pengguna === id_pengguna);
-    return user ? user.nama : `User ${id_pengguna}`;
+    const user = users.find(u => u.id_pengguna === id_pengguna || u.id === id_pengguna);
+    return user ? (user.nama_lengkap || user.nama) : `User ${id_pengguna}`;
   };
 
   const getStatusColor = (status) => {
@@ -306,8 +368,8 @@ const AdminPeminjaman = () => {
                 >
                   <option value="">Select User</option>
                   {users.map((user) => (
-                    <option key={user.id_pengguna} value={user.id_pengguna}>
-                      {user.nama}
+                    <option key={user.id_pengguna || user.id} value={user.id_pengguna || user.id}>
+                      {user.nama_lengkap || user.nama}
                     </option>
                   ))}
                 </select>

@@ -636,10 +636,26 @@ const Barang = () => {
                             </div>
                           </div>
                           
-                          {/* Right side - Quantity Badge */}
-                          <div className="flex-shrink-0">
-                            <div className="bg-[#096B68] text-white text-sm px-2 py-1 rounded-full">
-                              {item.jumlah || item.quantity || 0} unit{((item.jumlah || item.quantity || 0) !== 1) ? 's' : ''}
+                          {/* Right side - Stock Status */}
+                          <div className="flex-shrink-0 flex flex-col items-end space-y-2">
+                            <div className={`text-white text-sm px-3 py-1 rounded-full font-medium ${
+                              (item.jumlah || item.quantity || 0) > 10 ? 'bg-green-500' :
+                              (item.jumlah || item.quantity || 0) > 5 ? 'bg-yellow-500' :
+                              (item.jumlah || item.quantity || 0) > 0 ? 'bg-orange-500' :
+                              'bg-red-500'
+                            }`}>
+                              Stok: {item.jumlah || item.quantity || 0}
+                            </div>
+                            <div className={`text-xs px-2 py-1 rounded-full ${
+                              (item.jumlah || item.quantity || 0) > 10 ? 'bg-green-100 text-green-800' :
+                              (item.jumlah || item.quantity || 0) > 5 ? 'bg-yellow-100 text-yellow-800' :
+                              (item.jumlah || item.quantity || 0) > 0 ? 'bg-orange-100 text-orange-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {(item.jumlah || item.quantity || 0) > 10 ? 'Tersedia' :
+                               (item.jumlah || item.quantity || 0) > 5 ? 'Terbatas' :
+                               (item.jumlah || item.quantity || 0) > 0 ? 'Sedikit' :
+                               'Habis'}
                             </div>
                           </div>
                         </div>

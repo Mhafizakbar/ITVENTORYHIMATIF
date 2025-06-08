@@ -21,19 +21,9 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      // Try to get user info from backend using the stored cookie
-      const response = await fetch('https://pweb-be-production.up.railway.app/user/profile', {
-        method: 'GET',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-      } else {
-        setUser(null);
-      }
+      // Since /user/profile endpoint is not available, we'll skip this check
+      // and rely on the login data stored in context
+      setUser(null);
     } catch (error) {
       console.log('Auth check failed:', error);
       setUser(null);
