@@ -298,10 +298,10 @@ const Loan = () => {
       <div className="min-h-screen page-background">
         <div className="content-wrapper">
           <Navbar />
-          <div className="container mx-auto px-6 py-16 flex items-center justify-center min-h-[60vh]">
+          <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-16 flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
-              <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-[#096B68]" />
-              <p className="text-lg text-slate-600">Memuat data barang...</p>
+              <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 animate-spin mx-auto mb-4 text-[#096B68]" />
+              <p className="text-base sm:text-lg text-slate-600">Memuat data barang...</p>
             </div>
           </div>
         </div>
@@ -315,14 +315,14 @@ const Loan = () => {
       <div className="min-h-screen page-background">
         <div className="content-wrapper">
           <Navbar />
-          <div className="container mx-auto px-6 py-16 flex items-center justify-center min-h-[60vh]">
+          <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-16 flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
-              <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-              <h3 className="text-xl font-semibold text-slate-800 mb-2">Terjadi Kesalahan</h3>
-              <p className="text-slate-600 mb-4">{error}</p>
+              <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 text-red-500" />
+              <h3 className="text-lg sm:text-xl font-semibold text-slate-800 mb-2">Terjadi Kesalahan</h3>
+              <p className="text-sm sm:text-base text-slate-600 mb-4 px-4">{error}</p>
               <button
                 onClick={() => window.location.reload()}
-                className="px-6 py-2 bg-[#096B68] text-white rounded-lg hover:bg-[#085854] transition-colors"
+                className="px-4 sm:px-6 py-2 bg-[#096B68] text-white rounded-lg hover:bg-[#085854] transition-colors text-sm sm:text-base"
               >
                 Coba Lagi
               </button>
@@ -513,21 +513,21 @@ const Loan = () => {
       <div className="min-h-screen page-background">
         <div className="content-wrapper">
           <Navbar />
-          <div className="py-8 px-6">
-            <div className="max-w-4xl mx-auto p-8 form-container shadow-2xl rounded-3xl animate-scale-in animate-pulse-glow">
-              <h2 className="text-4xl font-bold text-[#096B68] mb-8 text-center border-b pb-6 animate-slide-in-top">
+          <div className="py-4 sm:py-6 lg:py-8 px-4 sm:px-6">
+            <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 form-container shadow-xl sm:shadow-2xl rounded-2xl sm:rounded-3xl animate-scale-in animate-pulse-glow">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#096B68] mb-6 sm:mb-8 text-center border-b pb-4 sm:pb-6 animate-slide-in-top">
                 <span className="text-[#096B68]">Formulir Peminjaman Barang</span>
               </h2>
 
-              <div className="space-y-8">
+              <div className="space-y-6 sm:space-y-8">
                 {/* Data Peminjam */}
-                <div className="bg-gradient-to-r from-[#90D1CA] to-[#FFFBDE] p-8 rounded-2xl border-l-4 border-[#096B68] shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in delay-200">
-                  <h3 className="text-xl font-semibold text-gray-700 mb-6 flex items-center">
+                <div className="bg-gradient-to-r from-[#90D1CA] to-[#FFFBDE] p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl border-l-4 border-[#096B68] shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in delay-200">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-4 sm:mb-6 flex items-center">
                     👤 <span className="ml-2 text-[#096B68]">Data Peminjam</span>
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                         Nama Lengkap *
                       </label>
                       <input
@@ -535,12 +535,12 @@ const Loan = () => {
                         name="nama"
                         value={formData.nama}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-blue-400"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-blue-400 text-sm sm:text-base"
                         placeholder="Masukkan nama lengkap"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                         Tanggal Peminjaman *
                       </label>
                       <input
@@ -548,11 +548,11 @@ const Loan = () => {
                         name="tanggalPinjam"
                         value={formData.tanggalPinjam}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-blue-400"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-blue-400 text-sm sm:text-base"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                         Tanggal Kembali *
                       </label>
                       <input
@@ -560,27 +560,27 @@ const Loan = () => {
                         name="tanggalKembali"
                         value={formData.tanggalKembali}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-blue-400"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-blue-400 text-sm sm:text-base"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Tambah Barang */}
-                <div className="bg-gradient-to-r from-[#FFFBDE] to-[#90D1CA] p-8 rounded-2xl border-l-4 border-[#096B68] shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in delay-300">
-                  <h3 className="text-xl font-semibold text-gray-700 mb-6 flex items-center">
+                <div className="bg-gradient-to-r from-[#FFFBDE] to-[#90D1CA] p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl border-l-4 border-[#096B68] shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in delay-300">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-4 sm:mb-6 flex items-center">
                     ➕ <span className="ml-2 text-[#096B68]">Tambah Barang</span>
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                    <div className="sm:col-span-2 lg:col-span-1">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                         Nama Barang
                       </label>
                       <select
                         name="id_barang"
                         value={barangBaru.id_barang}
                         onChange={handleBarangChange}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 hover:border-teal-400"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 hover:border-teal-400 text-sm sm:text-base"
                       >
                         <option value="">Pilih Barang</option>
                         {barangTersedia.map((barang) => (
@@ -591,7 +591,7 @@ const Loan = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                         Jumlah
                       </label>
                       <input
@@ -600,11 +600,11 @@ const Loan = () => {
                         value={barangBaru.jumlah}
                         onChange={handleBarangChange}
                         min="1"
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 hover:border-teal-400"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 hover:border-teal-400 text-sm sm:text-base"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                         Keterangan
                       </label>
                       <input
@@ -612,49 +612,51 @@ const Loan = () => {
                         name="keterangan"
                         value={barangBaru.keterangan}
                         onChange={handleBarangChange}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 hover:border-teal-400"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 hover:border-teal-400 text-sm sm:text-base"
                         placeholder="Opsional"
                       />
                     </div>
-                    <button
-                      type="button"
-                      onClick={tambahBarang}
-                      className="px-6 py-3 bg-[#FFFBDE] text-[#096B68] font-medium rounded-xl hover:bg-[#90D1CA] focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 shadow-lg"
-                    >
-                      Tambah
-                    </button>
+                    <div className="sm:col-span-2 lg:col-span-1 flex items-end">
+                      <button
+                        type="button"
+                        onClick={tambahBarang}
+                        className="w-full px-4 sm:px-6 py-2 sm:py-3 bg-[#FFFBDE] text-[#096B68] font-medium rounded-lg sm:rounded-xl hover:bg-[#90D1CA] focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 shadow-lg text-sm sm:text-base"
+                      >
+                        Tambah
+                      </button>
+                    </div>
                   </div>
                 </div>
 
                 {/* Daftar Barang yang Dipinjam */}
                 {formData.barangDipinjam.length > 0 && (
-                  <div className="bg-[#FFFBDE] p-8 rounded-2xl border-l-4 border-[#096B68] shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in-up delay-400">
-                    <h3 className="text-xl font-semibold text-gray-700 mb-6 flex items-center">
+                  <div className="bg-[#FFFBDE] p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl border-l-4 border-[#096B68] shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in-up delay-400">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-4 sm:mb-6 flex items-center">
                       📦{' '}
                       <span className="ml-2 text-[#096B68]">
                         Barang yang Dipinjam ({formData.barangDipinjam.length} item)
                       </span>
                     </h3>
-                    <div className="overflow-x-auto">
-                      <table className="w-full border-collapse border-2 border-[#096B68] rounded-2xl overflow-hidden shadow-lg">
+                    <div className="overflow-x-auto -mx-2 sm:mx-0">
+                      <table className="w-full min-w-[600px] border-collapse border-2 border-[#096B68] rounded-lg sm:rounded-2xl overflow-hidden shadow-lg">
                         <thead>
                           <tr className="bg-[#096B68]">
-                            <th className="border border-[#096B68] px-6 py-4 text-left font-bold text-white">
+                            <th className="border border-[#096B68] px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 text-left font-bold text-white text-xs sm:text-sm lg:text-base">
                               No
                             </th>
-                            <th className="border border-[#096B68] px-6 py-4 text-left font-bold text-white">
+                            <th className="border border-[#096B68] px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 text-left font-bold text-white text-xs sm:text-sm lg:text-base">
                               Nama Barang
                             </th>
-                            <th className="border border-[#096B68] px-6 py-4 text-left font-bold text-white">
+                            <th className="border border-[#096B68] px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 text-left font-bold text-white text-xs sm:text-sm lg:text-base">
                               Jumlah Pinjam
                             </th>
-                            <th className="border border-[#096B68] px-6 py-4 text-left font-bold text-white">
+                            <th className="border border-[#096B68] px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 text-left font-bold text-white text-xs sm:text-sm lg:text-base">
                               Stok Tersedia
                             </th>
-                            <th className="border border-[#096B68] px-6 py-4 text-left font-bold text-white">
+                            <th className="border border-[#096B68] px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 text-left font-bold text-white text-xs sm:text-sm lg:text-base">
                               Keterangan
                             </th>
-                            <th className="border border-[#096B68] px-6 py-4 text-left font-bold text-white">
+                            <th className="border border-[#096B68] px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 text-left font-bold text-white text-xs sm:text-sm lg:text-base">
                               Aksi
                             </th>
                           </tr>
@@ -665,30 +667,30 @@ const Loan = () => {
                               key={barang.id}
                               className="bg-gradient-to-r from-green-50 to-emerald-50 transition-all duration-300"
                             >
-                              <td className="border border-[#096B68] px-6 py-4 font-medium">
+                              <td className="border border-[#096B68] px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 font-medium text-xs sm:text-sm lg:text-base">
                                 {index + 1}
                               </td>
-                              <td className="border border-[#096B68] px-6 py-4 font-bold text-gray-800">
+                              <td className="border border-[#096B68] px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 font-bold text-gray-800 text-xs sm:text-sm lg:text-base">
                                 {barang.namaBarang}
                               </td>
-                              <td className="border border-[#096B68] px-6 py-4">
-                                <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                              <td className="border border-[#096B68] px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4">
+                                <span className="inline-flex px-1 sm:px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                                   {barang.jumlah}
                                 </span>
                               </td>
-                              <td className="border border-[#096B68] px-6 py-4">
-                                <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                              <td className="border border-[#096B68] px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4">
+                                <span className="inline-flex px-1 sm:px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                                   {barang.stokTersedia || 'N/A'}
                                 </span>
                               </td>
-                              <td className="border border-[#096B68] px-6 py-4 text-gray-600">
+                              <td className="border border-[#096B68] px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 text-gray-600 text-xs sm:text-sm lg:text-base">
                                 {barang.keterangan || '-'}
                               </td>
-                              <td className="border border-[#096B68] px-6 py-4">
+                              <td className="border border-[#096B68] px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4">
                                 <button
                                   type="button"
                                   onClick={() => hapusBarang(barang.id)}
-                                  className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700 transition-all duration-300 shadow-lg"
+                                  className="px-2 sm:px-3 lg:px-4 py-1 sm:py-2 bg-red-600 text-white text-xs sm:text-sm font-medium rounded-lg sm:rounded-xl hover:bg-red-700 transition-all duration-300 shadow-lg"
                                 >
                                   Hapus
                                 </button>
@@ -702,11 +704,11 @@ const Loan = () => {
                 )}
 
                 {/* Submit Button */}
-                <div className="flex justify-center pt-8 animate-fade-in-up delay-500">
+                <div className="flex justify-center pt-6 sm:pt-8 animate-fade-in-up delay-500">
                   <button
                     type="button"
                     onClick={handleSubmit}
-                    className="px-12 py-4 bg-[#096B68] text-white font-bold text-lg rounded-2xl hover:bg-[#90D1CA] focus:outline-none focus:ring-4 focus:ring-green-300 transition-all duration-300 shadow-2xl"
+                    className="w-full sm:w-auto px-8 sm:px-10 lg:px-12 py-3 sm:py-4 bg-[#096B68] text-white font-bold text-base sm:text-lg rounded-xl sm:rounded-2xl hover:bg-[#90D1CA] focus:outline-none focus:ring-4 focus:ring-green-300 transition-all duration-300 shadow-xl sm:shadow-2xl"
                   >
                     Submit Peminjaman
                   </button>

@@ -1,1 +1,166 @@
 @import "tailwindcss";
+
+/* Mobile-first responsive utilities */
+@layer utilities {
+  /* Ensure proper touch targets on mobile */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Prevent horizontal scroll on mobile */
+  .prevent-scroll {
+    overflow-x: hidden;
+  }
+
+  /* Better text scaling on mobile */
+  .text-responsive {
+    font-size: clamp(0.875rem, 2.5vw, 1rem);
+  }
+
+  /* Safe area padding for mobile devices */
+  .safe-area-padding {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Base responsive styles */
+@layer base {
+  html {
+    /* Prevent zoom on input focus on iOS */
+    -webkit-text-size-adjust: 100%;
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
+  }
+
+  body {
+    /* Prevent horizontal scroll */
+    overflow-x: hidden;
+    /* Better font rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Better button and input styling on mobile */
+  button, input, select, textarea {
+    /* Remove iOS styling */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    /* Ensure proper touch targets */
+    min-height: 44px;
+  }
+
+  /* Improve table responsiveness */
+  table {
+    /* Allow horizontal scroll on small screens */
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  @media (min-width: 768px) {
+    table {
+      display: table;
+      overflow-x: visible;
+      white-space: normal;
+    }
+  }
+}
+
+/* Component-specific responsive styles */
+@layer components {
+  /* Responsive container */
+  .container-responsive {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .container-responsive {
+      max-width: 640px;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .container-responsive {
+      max-width: 768px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container-responsive {
+      max-width: 1024px;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .container-responsive {
+      max-width: 1280px;
+    }
+  }
+
+  /* Responsive card */
+  .card-responsive {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4;
+  }
+
+  @media (min-width: 640px) {
+    .card-responsive {
+      @apply p-6 rounded-xl shadow-md;
+    }
+  }
+
+  /* Responsive form elements */
+  .form-input-responsive {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm;
+  }
+
+  @media (min-width: 640px) {
+    .form-input-responsive {
+      @apply px-4 py-3 text-base rounded-xl;
+    }
+  }
+
+  /* Responsive button */
+  .btn-responsive {
+    @apply px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200;
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  @media (min-width: 640px) {
+    .btn-responsive {
+      @apply px-6 py-3 text-base rounded-xl;
+    }
+  }
+
+  /* Responsive grid */
+  .grid-responsive {
+    @apply grid grid-cols-1 gap-4;
+  }
+
+  @media (min-width: 640px) {
+    .grid-responsive {
+      @apply grid-cols-2 gap-6;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .grid-responsive {
+      @apply grid-cols-3;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .grid-responsive {
+      @apply grid-cols-4;
+    }
+  }
+}

@@ -451,21 +451,21 @@ const Barang = () => {
 
         <Navbar />
         
-        <div className="container mx-auto px-6 py-16">
+        <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-16">
           {/* Header Section */}
-          <div className="text-center mb-16">
-            <h1 className="milku-font text-5xl md:text-6xl font-light text-slate-800 mb-6 tracking-widest fade-in-up font-bold">
+          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+            <h1 className="milku-font text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-slate-800 mb-4 sm:mb-6 tracking-widest fade-in-up font-bold">
               K A T E G O R I
             </h1>
-            <div className="w-24 h-1 bg-gradient-to-r from-green-600 to-emerald-800 mx-auto mb-8 scale-in"></div>
-            <p className="text-slate-600 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed fade-in-up-delay-1">
+            <div className="w-16 sm:w-20 lg:w-24 h-1 bg-gradient-to-r from-green-600 to-emerald-800 mx-auto mb-6 sm:mb-8 scale-in"></div>
+            <p className="text-slate-600 text-base sm:text-lg lg:text-xl max-w-3xl mx-auto leading-relaxed fade-in-up-delay-1 px-4">
               Temukan dan pinjam inventaris sesuai kebutuhan kegiatanmu di ITVENTORY!
               Inventaris dikelompokkan berdasarkan jenis untuk memudahkan pencarian dan mendukung kegiatan seperti rapat, acara, dan operasional harian.
             </p>
           </div>
 
           {/* Categories Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 w-full mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 w-full mb-6 sm:mb-8">
             {categories.map((category, index) => {
               const IconComponent = category.icon;
               const animationClass = index % 4 === 0 ? 'slide-in-left' : 
@@ -476,13 +476,13 @@ const Barang = () => {
               
               return (
                 <div key={category.id} className="w-full">
-                  <div 
-                    className={`category-card cursor-pointer rounded-3xl p-6 ${animationClass} ${isExpanded ? 'ring-4 ring-opacity-50 ' + (category.id === 1 ? 'ring-emerald-300' : category.id === 2 ? 'ring-teal-300' : category.id === 3 ? 'ring-yellow-300' : 'ring-gray-300') : ''}`}
+                  <div
+                    className={`category-card cursor-pointer rounded-2xl sm:rounded-3xl p-4 sm:p-6 ${animationClass} ${isExpanded ? 'ring-2 sm:ring-4 ring-opacity-50 ' + (category.id === 1 ? 'ring-emerald-300' : category.id === 2 ? 'ring-teal-300' : category.id === 3 ? 'ring-yellow-300' : 'ring-gray-300') : ''}`}
                     onClick={() => handleCategoryClick(category.id)}
                   >
                     {/* Circular Image Container */}
-                    <div className="relative mb-6">
-                      <div className={`w-48 h-48 mx-auto rounded-full ${category.bgColor} p-1 shadow-2xl`}>
+                    <div className="relative mb-4 sm:mb-6">
+                      <div className={`w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 mx-auto rounded-full ${category.bgColor} p-1 shadow-xl sm:shadow-2xl`}>
                         <div className="w-full h-full rounded-full overflow-hidden bg-white relative">
                           {/* Background Image */}
                           <div className="category-image w-full h-full bg-cover bg-center rounded-full bg-gray-200">
@@ -490,8 +490,8 @@ const Barang = () => {
                             <div className="image-overlay absolute inset-0 bg-white bg-opacity-70 rounded-full flex items-center justify-center">
                               {/* Icon Overlay */}
                               <div className="icon-overlay">
-                                <IconComponent 
-                                  size={60} 
+                                <IconComponent
+                                  size={window.innerWidth < 640 ? 40 : window.innerWidth < 1024 ? 50 : 60}
                                   className={`${category.iconColor} drop-shadow-lg`}
                                   strokeWidth={1.5}
                                 />
@@ -507,32 +507,32 @@ const Barang = () => {
                     </div>
 
                     {/* Content */}
-                    <div className="text-center px-4">
-                      <h3 className="milku-font text-xl md:text-2xl font-medium text-slate-800 mb-3 tracking-wide">
+                    <div className="text-center px-2 sm:px-4">
+                      <h3 className="milku-font text-lg sm:text-xl lg:text-2xl font-medium text-slate-800 mb-2 sm:mb-3 tracking-wide">
                         {category.name}
                       </h3>
-                      <p className="text-slate-600 text-sm leading-relaxed mb-4">
+                      <p className="text-slate-600 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 px-2">
                         {category.description}
                       </p>
-                      
+
                       {/* Item count */}
-                      <div className="flex items-center justify-center mb-4">
-                        <Package className="w-4 h-4 text-slate-500 mr-2" />
-                        <span className="text-slate-600 text-sm">
+                      <div className="flex items-center justify-center mb-3 sm:mb-4">
+                        <Package className="w-3 h-3 sm:w-4 sm:h-4 text-slate-500 mr-1 sm:mr-2" />
+                        <span className="text-slate-600 text-xs sm:text-sm">
                           {categoryItems.length} item{categoryItems.length !== 1 ? 's' : ''}
                         </span>
                       </div>
-                      
+
                       {/* Expand/Collapse indicator */}
-                      <div className="flex items-center justify-center mt-4">
+                      <div className="flex items-center justify-center mt-3 sm:mt-4">
                         <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : 'rotate-0'}`}>
-                          <ChevronDown className="w-6 h-6 text-slate-500" />
+                          <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6 text-slate-500" />
                         </div>
                       </div>
-                      
+
                       {/* Hover indicator */}
                       <div className="mt-2 opacity-0 category-card-hover transition-opacity duration-300">
-                        <div className={`w-12 h-0.5 ${category.bgColor} mx-auto`}></div>
+                        <div className={`w-8 sm:w-12 h-0.5 ${category.bgColor} mx-auto`}></div>
                       </div>
                     </div>
                   </div>
@@ -543,55 +543,57 @@ const Barang = () => {
 
           {/* Expanded Items Card - Full Width, Positioned Below Categories */}
           {expandedCategory && (
-            <div className={`expanded-card show w-full mt-8`}>
-              <div className={`rounded-2xl p-8 shadow-2xl border-l-8 ${
+            <div className={`expanded-card show w-full mt-6 sm:mt-8`}>
+              <div className={`rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-xl sm:shadow-2xl border-l-4 sm:border-l-8 ${
                 expandedCategoryData.id === 1 ? 'border-[#096B68] bg-gradient-to-r from-[#90D1CA] via-white to-[#FFFBDE]' :
                 expandedCategoryData.id === 2 ? 'border-[#90D1CA] bg-gradient-to-r from-[#FFFBDE] via-white to-[#90D1CA]' :
                 expandedCategoryData.id === 3 ? 'border-[#FFD586] bg-gradient-to-r from-[#90D1CA] via-white to-[#FFFBDE]' :
                 'border-gray-500 bg-gradient-to-r from-gray-100 via-white to-gray-100'
               } backdrop-filter backdrop-blur-sm bg-opacity-95`}>
-                
+
                 {/* Header with category info */}
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center space-x-4">
-                    <div className={`p-3 rounded-full ${
+                <div className="flex items-center justify-between mb-6 sm:mb-8">
+                  <div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
+                    <div className={`p-2 sm:p-3 rounded-full flex-shrink-0 ${
                       expandedCategoryData.id === 1 ? 'bg-blue-100' :
                       expandedCategoryData.id === 2 ? 'bg-blue-100' :
                       expandedCategoryData.id === 3 ? 'bg-orange-100' :
                       'bg-gray-100'
                     }`}>
-                      <expandedCategoryData.icon className={`w-8 h-8 ${
-                        expandedCategoryData.id === 1 ? 'text-[#096B68]' :
-                        expandedCategoryData.id === 2 ? 'text-[#90D1CA]' :
-                        expandedCategoryData.id === 3 ? 'text-[#FFD586]' :
-                        'text-gray-500'
-                      }`} />
+                      {React.createElement(expandedCategoryData.icon, {
+                        className: `w-6 h-6 sm:w-8 sm:h-8 ${
+                          expandedCategoryData.id === 1 ? 'text-[#096B68]' :
+                          expandedCategoryData.id === 2 ? 'text-[#90D1CA]' :
+                          expandedCategoryData.id === 3 ? 'text-[#FFD586]' :
+                          'text-gray-500'
+                        }`
+                      })}
                     </div>
-                    <div>
-                      <h4 className="text-3xl font-bold text-slate-800">
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 truncate">
                         Produk {expandedCategoryData.name}
                       </h4>
-                      <p className="text-slate-600 text-lg">
+                      <p className="text-slate-600 text-sm sm:text-base lg:text-lg">
                         {expandedCategoryItems.length} item tersedia
                       </p>
                     </div>
                   </div>
-                  
+
                   {/* Close button */}
-                  <button 
+                  <button
                     onClick={() => setExpandedCategory(null)}
-                    className="p-2 hover:bg-white hover:bg-opacity-50 rounded-full transition-all duration-200"
+                    className="p-1 sm:p-2 hover:bg-white hover:bg-opacity-50 rounded-full transition-all duration-200 flex-shrink-0"
                   >
-                    <ChevronDown className="w-6 h-6 text-slate-600 rotate-180" />
+                    <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6 text-slate-600 rotate-180" />
                   </button>
                 </div>
-                
+
                 {/* Items Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                   {expandedCategoryItems.map((item, itemIndex) => (
-                    <div 
-                      key={item.id_barang || item.id} 
-                      className={`bg-white rounded-xl p-6 shadow-lg border-2 transition-all duration-300 hover:shadow-xl hover:transform hover:scale-[1.02] item-slide-in ${
+                    <div
+                      key={item.id_barang || item.id}
+                      className={`bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-lg border-2 transition-all duration-300 hover:shadow-xl hover:transform hover:scale-[1.02] item-slide-in ${
                         expandedCategoryData.id === 1 ? 'border-[#096B68] hover:border-[#096B68]' :
                         expandedCategoryData.id === 2 ? 'border-[#90D1CA] hover:border-[#90D1CA]' :
                         expandedCategoryData.id === 3 ? 'border-[#FFD586] hover:border-[#FFD586]' :
@@ -601,9 +603,9 @@ const Barang = () => {
                     >
                       {/* Item Layout */}
                       <div className="w-full">
-                        <div className="flex items-start justify-between space-x-4">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0 sm:space-x-4">
                           {/* Left side - Icon and Content */}
-                          <div className="flex items-start space-x-4 flex-1">
+                          <div className="flex items-start space-x-3 sm:space-x-4 flex-1">
                             {/* Item Icon */}
                             <div className={`p-2 rounded-lg flex-shrink-0 ${
                               expandedCategoryData.id === 1 ? 'bg-blue-50' :
@@ -611,20 +613,20 @@ const Barang = () => {
                               expandedCategoryData.id === 3 ? 'bg-orange-50' :
                               'bg-gray-50'
                             }`}>
-                              <Package className={`w-6 h-6 ${
+                              <Package className={`w-5 h-5 sm:w-6 sm:h-6 ${
                                 expandedCategoryData.id === 1 ? 'text-[#096B68]' :
                                 expandedCategoryData.id === 2 ? 'text-[#90D1CA]' :
                                 expandedCategoryData.id === 3 ? 'text-[#FFD586]' :
                                 'text-gray-500'
                               }`} />
                             </div>
-                            
+
                             {/* Item Content */}
-                            <div className="flex-1">
-                              <h5 className="text-xl font-bold text-slate-800 leading-tight mb-2">
+                            <div className="flex-1 min-w-0">
+                              <h5 className="text-lg sm:text-xl font-bold text-slate-800 leading-tight mb-1 sm:mb-2">
                                 {item.nama_barang || item.name}
                               </h5>
-                              <p className="text-slate-700 text-sm leading-relaxed">
+                              <p className="text-slate-700 text-xs sm:text-sm leading-relaxed">
                                 {item.deskripsi || item.description || 'Tidak ada deskripsi'}
                               </p>
                               {/* Kategori info untuk item tidak berkategori */}
@@ -635,10 +637,10 @@ const Barang = () => {
                               )}
                             </div>
                           </div>
-                          
+
                           {/* Right side - Stock Status */}
-                          <div className="flex-shrink-0 flex flex-col items-end space-y-2">
-                            <div className={`text-white text-sm px-3 py-1 rounded-full font-medium ${
+                          <div className="flex-shrink-0 flex flex-row sm:flex-col items-center sm:items-end space-x-2 sm:space-x-0 sm:space-y-2">
+                            <div className={`text-white text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-full font-medium ${
                               (item.jumlah || item.quantity || 0) > 10 ? 'bg-green-500' :
                               (item.jumlah || item.quantity || 0) > 5 ? 'bg-yellow-500' :
                               (item.jumlah || item.quantity || 0) > 0 ? 'bg-orange-500' :

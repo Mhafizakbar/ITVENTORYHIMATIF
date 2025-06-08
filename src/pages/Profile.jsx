@@ -144,10 +144,10 @@ const Profile = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#E8F5F3] to-[#F0F9FF]">
         <Navbar />
-        <div className="container mx-auto px-6 py-16 flex items-center justify-center min-h-[60vh]">
+        <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-16 flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-[#096B68]" />
-            <p className="text-lg text-slate-600">Memuat data profile...</p>
+            <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 animate-spin mx-auto mb-4 text-[#096B68]" />
+            <p className="text-base sm:text-lg text-slate-600">Memuat data profile...</p>
           </div>
         </div>
       </div>
@@ -158,14 +158,14 @@ const Profile = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#E8F5F3] to-[#F0F9FF]">
         <Navbar />
-        <div className="container mx-auto px-6 py-16 flex items-center justify-center min-h-[60vh]">
+        <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-16 flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-            <h3 className="text-xl font-semibold text-slate-800 mb-2">Terjadi Kesalahan</h3>
-            <p className="text-slate-600 mb-4">{error}</p>
+            <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 text-red-500" />
+            <h3 className="text-lg sm:text-xl font-semibold text-slate-800 mb-2">Terjadi Kesalahan</h3>
+            <p className="text-sm sm:text-base text-slate-600 mb-4 px-4">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="px-6 py-2 bg-[#096B68] text-white rounded-lg hover:bg-[#085854] transition-colors"
+              className="px-4 sm:px-6 py-2 bg-[#096B68] text-white rounded-lg hover:bg-[#085854] transition-colors text-sm sm:text-base"
             >
               Coba Lagi
             </button>
@@ -178,31 +178,31 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#E8F5F3] to-[#F0F9FF]">
       <Navbar />
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-[#096B68] mb-4">Profile Saya</h1>
-            <p className="text-slate-600">Lengkapi informasi profile Anda</p>
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-700">
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#096B68] mb-3 sm:mb-4">Profile Saya</h1>
+            <p className="text-sm sm:text-base text-slate-600">Lengkapi informasi profile Anda</p>
+            <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs sm:text-sm text-blue-700">
                 <strong>Info:</strong> Silakan lengkapi informasi profile Anda di bawah ini. Data akan disimpan menggunakan sistem registrasi.
               </p>
             </div>
           </div>
 
           {/* Profile Card */}
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl overflow-hidden">
             {/* Profile Header */}
-            <div className="bg-gradient-to-r from-[#096B68] to-[#90D1CA] px-8 py-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center">
-                  <User className="w-10 h-10 text-[#096B68]" />
+            <div className="bg-gradient-to-r from-[#096B68] to-[#90D1CA] px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+              <div className="flex flex-col sm:flex-row items-center sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full flex items-center justify-center flex-shrink-0">
+                  <User className="w-8 h-8 sm:w-10 sm:h-10 text-[#096B68]" />
                 </div>
-                <div className="text-white">
-                  <h2 className="text-2xl font-bold">{profileData.nama_lengkap || 'Silakan Lengkapi Nama'}</h2>
-                  <p className="text-[#E8F5F3]">{profileData.email}</p>
-                  <p className="text-sm text-[#B4EBE6] mt-1">
+                <div className="text-white text-center sm:text-left">
+                  <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">{profileData.nama_lengkap || 'Silakan Lengkapi Nama'}</h2>
+                  <p className="text-[#E8F5F3] text-sm sm:text-base break-all">{profileData.email}</p>
+                  <p className="text-xs sm:text-sm text-[#B4EBE6] mt-1">
                     {profileData.nama_lengkap ? 'Profile Lengkap' : 'Profile Belum Lengkap'}
                   </p>
                 </div>
@@ -210,18 +210,18 @@ const Profile = () => {
             </div>
 
             {/* Profile Content */}
-            <div className="p-8">
+            <div className="p-4 sm:p-6 lg:p-8">
               {/* Profile Information Section */}
-              <div className="mb-8">
-                <div className="flex justify-between items-center mb-6">
+              <div className="mb-6 sm:mb-8">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
                   <div>
-                    <h3 className="text-xl font-semibold text-slate-800">Informasi Profile</h3>
-                    <p className="text-sm text-gray-600 mt-1">Lengkapi data profile Anda</p>
+                    <h3 className="text-lg sm:text-xl font-semibold text-slate-800">Informasi Profile</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 mt-1">Lengkapi data profile Anda</p>
                   </div>
                   <button
                     onClick={handleSaveProfile}
                     disabled={saving}
-                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                    className="flex items-center justify-center px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 text-sm sm:text-base w-full sm:w-auto"
                   >
                     {saving ? (
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -232,11 +232,11 @@ const Profile = () => {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                   {/* Nama Lengkap */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <User className="w-4 h-4 inline mr-2" />
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                      <User className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" />
                       Nama Lengkap <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -244,7 +244,7 @@ const Profile = () => {
                       name="nama_lengkap"
                       value={editData.nama_lengkap}
                       onChange={handleEditChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096B68] focus:border-transparent"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096B68] focus:border-transparent text-sm sm:text-base"
                       placeholder="Masukkan nama lengkap Anda"
                       required
                     />
@@ -252,20 +252,20 @@ const Profile = () => {
 
                   {/* Email */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <Mail className="w-4 h-4 inline mr-2" />
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                      <Mail className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" />
                       Email
                     </label>
-                    <div className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-600">
-                      {profileData.email || 'Tidak tersedia'}
+                    <div className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 text-sm sm:text-base">
+                      <div className="break-all">{profileData.email || 'Tidak tersedia'}</div>
                       <span className="text-xs text-gray-500 block mt-1">Email tidak dapat diubah</span>
                     </div>
                   </div>
 
                   {/* No Telepon */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <Phone className="w-4 h-4 inline mr-2" />
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                      <Phone className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" />
                       No. Telepon <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -273,7 +273,7 @@ const Profile = () => {
                       name="no_telepon"
                       value={editData.no_telepon}
                       onChange={handleEditChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096B68] focus:border-transparent"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096B68] focus:border-transparent text-sm sm:text-base"
                       placeholder="Masukkan nomor telepon (contoh: 081234567890)"
                       required
                     />
@@ -281,14 +281,14 @@ const Profile = () => {
 
                   {/* Status Account */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <Calendar className="w-4 h-4 inline mr-2" />
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                      <Calendar className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" />
                       Status Akun
                     </label>
-                    <div className="w-full px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-green-700">
+                    <div className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-green-50 border border-green-200 rounded-lg text-green-700">
                       <div className="flex items-center">
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Akun Aktif - {user?.role || 'USER'}
+                        <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                        <span className="text-xs sm:text-sm">Akun Aktif - {user?.role || 'USER'}</span>
                       </div>
                       <p className="text-xs text-green-600 mt-1">
                         Login terakhir: {new Date().toLocaleDateString('id-ID')}

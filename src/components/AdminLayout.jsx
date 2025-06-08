@@ -112,20 +112,23 @@ const AdminLayout = ({ children }) => {
       <div className="lg:ml-64">
         {/* Top bar */}
         <div className="bg-white shadow-sm border-b border-gray-200">
-          <div className="flex items-center justify-between h-16 px-6">
+          <div className="flex items-center justify-between h-14 sm:h-16 px-4 sm:px-6">
             <button
               onClick={() => setSidebarOpen(true)}
               className="lg:hidden text-gray-600 hover:text-gray-900"
             >
-              <Menu size={24} />
+              <Menu size={20} className="sm:w-6 sm:h-6" />
             </button>
-            
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-600">
+
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <div className="text-xs sm:text-sm text-gray-600 hidden sm:block">
                 Welcome, {user?.email || 'Admin'}
               </div>
-              <div className="w-8 h-8 bg-[#096b68] rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
+              <div className="text-xs sm:text-sm text-gray-600 sm:hidden">
+                {user?.email ? user.email.split('@')[0] : 'Admin'}
+              </div>
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-[#096b68] rounded-full flex items-center justify-center">
+                <span className="text-white text-xs sm:text-sm font-medium">
                   {user?.email ? user.email.charAt(0).toUpperCase() : 'A'}
                 </span>
               </div>
@@ -134,7 +137,7 @@ const AdminLayout = ({ children }) => {
         </div>
 
         {/* Page content */}
-        <main className="p-6">
+        <main className="p-4 sm:p-6">
           {children}
         </main>
       </div>
