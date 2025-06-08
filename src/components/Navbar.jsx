@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { Menu, X, User, LogOut } from 'lucide-react';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout, isAdmin } = useAuth();
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -43,7 +46,8 @@ const Navbar = () => {
     { to: '/home', label: 'Home' },
     { to: '/barang', label: 'Item' },
     { to: '/loan', label: 'Loan' },
-    { to: '/detail', label: 'Details' }
+    { to: '/detail', label: 'Details' },
+    ...(isAdmin() ? [{ to: '/admin', label: 'Admin' }] : [])
   ];
 
   // Hamburger menu items dengan icon
@@ -57,13 +61,18 @@ const Navbar = () => {
         closeMobileMenu();
       }
     },
-    { 
-      to: '/signout', 
-      label: 'Sign Out', 
+    {
+      to: '/signout',
+      label: 'Sign Out',
       icon: LogOut,
-      onClick: () => {
-        console.log('Sign Out clicked');
-        // Add your sign out logic here
+      onClick: async () => {
+        try {
+          await logout();
+          navigate('/');
+        } catch (error) {
+          console.error('Logout failed:', error);
+          navigate('/');
+        }
         closeMobileMenu();
       }
     }

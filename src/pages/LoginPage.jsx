@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 
 const LoginPage = () => {
@@ -8,7 +9,7 @@ const LoginPage = () => {
   // Login form states
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  
+
   // Register form states
   const [registerName, setRegisterName] = useState('');
   const [registerEmail, setRegisterEmail] = useState('');
@@ -19,6 +20,18 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { login, user, isAdmin } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      if (isAdmin()) {
+        navigate('/admin');
+      } else {
+        navigate('/home');
+      }
+    }
+  }, [user, navigate, isAdmin]);
 
   useEffect(() => {
     // Add Google Fonts link to head
@@ -70,9 +83,22 @@ const LoginPage = () => {
       .then(data => {
         setLoading(false);
         console.log('Login success:', data);
-        alert('Login berhasil!');
-        
-        navigate('/home');
+
+        // Save user data to context
+        const userData = {
+          email: loginEmail,
+          role: data.data
+        };
+        login(userData, data.data);
+
+        // Check user role and redirect accordingly
+        if (data.data === 'ADMIN') {
+          alert('Login admin berhasil! Mengarahkan ke dashboard admin...');
+          navigate('/admin');
+        } else {
+          alert('Login berhasil!');
+          navigate('/home');
+        }
       })
       .catch(err => {
         setLoading(false);
