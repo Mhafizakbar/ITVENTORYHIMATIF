@@ -454,7 +454,7 @@ const Barang = () => {
         <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-16">
           {/* Header Section */}
           <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-            <h1 className="milku-font text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-slate-800 mb-4 sm:mb-6 tracking-widest fade-in-up font-bold">
+            <h1 className="milku-font text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-slate-800 mb-4 sm:mb-6 tracking-widest fade-in-up">
               K A T E G O R I
             </h1>
             <div className="w-16 sm:w-20 lg:w-24 h-1 bg-gradient-to-r from-green-600 to-emerald-800 mx-auto mb-6 sm:mb-8 scale-in"></div>
@@ -465,7 +465,7 @@ const Barang = () => {
           </div>
 
           {/* Categories Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 w-full mb-6 sm:mb-8">
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 lg:gap-8 w-full mb-6 sm:mb-8">
             {categories.map((category, index) => {
               const IconComponent = category.icon;
               const animationClass = index % 4 === 0 ? 'slide-in-left' : 
@@ -475,7 +475,7 @@ const Barang = () => {
               const isExpanded = expandedCategory === category.id;
               
               return (
-                <div key={category.id} className="w-full">
+                <div key={category.id} className="w-full sm:w-80 lg:w-72 xl:w-80 flex-shrink-0">
                   <div
                     className={`category-card cursor-pointer rounded-2xl sm:rounded-3xl p-4 sm:p-6 ${animationClass} ${isExpanded ? 'ring-2 sm:ring-4 ring-opacity-50 ' + (category.id === 1 ? 'ring-emerald-300' : category.id === 2 ? 'ring-teal-300' : category.id === 3 ? 'ring-yellow-300' : 'ring-gray-300') : ''}`}
                     onClick={() => handleCategoryClick(category.id)}
