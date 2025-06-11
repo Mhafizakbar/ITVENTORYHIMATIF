@@ -400,13 +400,13 @@ const HomePage = () => {
                       <div className="flex items-center justify-center lg:justify-start space-x-2 sm:space-x-4 text-xs sm:text-sm flex-wrap">
                         <span>Sekretariat HIMATIF, Gedung Baru FST, Lt 2, pekanbaru</span>
                         <span className="text-gray-400">|</span>
-                        <span>3202 Cherokee St.</span>
+                        <span>📞+62821-7086-3236</span>
                       </div>
 
                       <div className="flex items-center justify-center lg:justify-start space-x-2 sm:space-x-4 text-xs sm:text-sm flex-wrap">
-                        <span>Or by appointment</span>
+                        <span>Itventaris</span>
                         <span className="text-gray-400">|</span>
-                        <span>St. Louis, MO 63118</span>
+                        <span>Himatif. © 2025</span>
                       </div>
                     </div>
                   </div>
