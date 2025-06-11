@@ -275,7 +275,14 @@ const Loan = () => {
 
     if (!response.ok) {
       if (response.status === 401) {
-        throw new Error('Sesi Anda telah berakhir. Silakan login ulang.');
+        // Clear local storage and redirect to login
+        localStorage.removeItem('user');
+        localStorage.removeItem('isLoggedIn');
+        alert.showError('Session Expired', 'Sesi Anda telah berakhir. Silakan login ulang.');
+        setTimeout(() => {
+          navigate('/');
+        }, 2000);
+        return;
       }
       const errorData = await response.json();
       throw new Error(errorData.error || `Error: ${response.status}`);
@@ -356,7 +363,7 @@ const Loan = () => {
 
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
         /* Background styles with enhanced blur */
         .page-background {
           background-image: url('${backgroundImage}');

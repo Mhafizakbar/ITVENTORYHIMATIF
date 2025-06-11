@@ -50,8 +50,10 @@ const Barang = () => {
         const barangData = await barangResponse.json();
         const kategoriData = await kategoriResponse.json();
 
-        console.log('Barang data:', barangData);
-        console.log('Kategori data:', kategoriData);
+        // Only log once when data is first loaded
+        if (barangData.length > 0 && kategoriData.length > 0) {
+          console.log('Data loaded successfully - Barang:', barangData.length, 'items, Kategori:', kategoriData.length, 'categories');
+        }
 
         setItemsData(barangData);
         setCategoriesData(kategoriData);

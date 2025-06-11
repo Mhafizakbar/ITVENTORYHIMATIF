@@ -25,7 +25,8 @@ import {
   XCircle,
   Loader2,
   AlertCircle,
-  Eye
+  Eye,
+  RotateCcw
 } from 'lucide-react';
 
 const AdminPeminjaman = () => {
@@ -146,7 +147,7 @@ const AdminPeminjaman = () => {
 
       // Cek apakah status berubah menjadi "selesai" untuk mengembalikan stok
       const isStatusChangedToSelesai = editingPeminjaman &&
-        editingPeminjaman.status !== 'selesai' &&
+        (editingPeminjaman.status === 'dikembalikan' || editingPeminjaman.status === 'aktif' || editingPeminjaman.status === 'dipinjam' || editingPeminjaman.status === 'terlambat') &&
         formData.status === 'selesai';
 
       const response = await fetch(url, {
@@ -247,9 +248,12 @@ const AdminPeminjaman = () => {
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'aktif':
+      case 'dipinjam':
         return 'bg-blue-100 text-blue-800';
       case 'selesai':
         return 'bg-green-100 text-green-800';
+      case 'dikembalikan':
+        return 'bg-purple-100 text-purple-800';
       case 'terlambat':
         return 'bg-red-100 text-red-800';
       default:
@@ -260,9 +264,12 @@ const AdminPeminjaman = () => {
   const getStatusIcon = (status) => {
     switch (status?.toLowerCase()) {
       case 'aktif':
+      case 'dipinjam':
         return <Clock className="h-4 w-4" />;
       case 'selesai':
         return <CheckCircle className="h-4 w-4" />;
+      case 'dikembalikan':
+        return <RotateCcw className="h-4 w-4" />;
       case 'terlambat':
         return <XCircle className="h-4 w-4" />;
       default:
@@ -368,10 +375,17 @@ const AdminPeminjaman = () => {
                         {formatDateShort(item.tanggal_kembali, true)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(item.status)}`}>
-                          {getStatusIcon(item.status)}
-                          <span className="ml-1">{item.status || 'aktif'}</span>
-                        </span>
+                        <div className="flex flex-col space-y-1">
+                          <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(item.status)}`}>
+                            {getStatusIcon(item.status)}
+                            <span className="ml-1">{item.status || 'aktif'}</span>
+                          </span>
+                          {item.status === 'dikembalikan' && (
+                            <span className="text-xs text-purple-600 font-medium bg-purple-50 px-2 py-1 rounded-full">
+                              🔄 User sudah mengembalikan
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
@@ -424,7 +438,6 @@ const AdminPeminjaman = () => {
           type="date"
           value={formData.tanggal_pinjam}
           onChange={(e) => setFormData({...formData, tanggal_pinjam: e.target.value})}
-          min={getCurrentDate()}
           required
         />
 
@@ -442,8 +455,10 @@ const AdminPeminjaman = () => {
           value={formData.status}
           onChange={(e) => setFormData({...formData, status: e.target.value})}
         >
-          <option value="aktif">Aktif</option>
-          <option value="selesai">Selesai</option>
+          <option value="aktif">Aktif (Sedang Dipinjam)</option>
+          <option value="dipinjam">Dipinjam (Sedang Dipinjam)</option>
+          <option value="dikembalikan">Dikembalikan (User sudah mengembalikan)</option>
+          <option value="selesai">Selesai (Peminjaman Selesai)</option>
           <option value="terlambat">Terlambat</option>
         </FormSelect>
       </FormModal>

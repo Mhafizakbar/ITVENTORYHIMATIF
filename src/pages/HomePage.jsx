@@ -159,7 +159,7 @@ const HomePage = () => {
 
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
         /* Background styles */
         .page-background {
           background-image: url('${backgroundImage}');
@@ -322,13 +322,13 @@ const HomePage = () => {
                     <div className="space-y-3 lg:space-y-4 text-gray-600">
                       <div className="flex items-center justify-center lg:justify-start space-x-2 sm:space-x-4 flex-wrap">
                         <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
-                        <span className="font-medium text-sm sm:text-base">VISITING HOURS</span>
+                        <span className="font-medium text-sm sm:text-base">HIMATIF</span>
                         <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
-                        <span className="font-medium text-sm sm:text-base">ADDRESS</span>
+                        <span className="font-medium text-sm sm:text-base">UIN SUSKA RIAU</span>
                       </div>
 
                       <div className="flex items-center justify-center lg:justify-start space-x-2 sm:space-x-4 text-xs sm:text-sm flex-wrap">
-                        <span>Sat-Sun 12pm-6pm</span>
+                        <span>Sekretariat HIMATIF, Gedung Baru FST, Lt 2, pekanbaru</span>
                         <span className="text-gray-400">|</span>
                         <span>3202 Cherokee St.</span>
                       </div>

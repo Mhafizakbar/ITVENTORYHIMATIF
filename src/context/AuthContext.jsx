@@ -21,11 +21,23 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      // Since /user/profile endpoint is not available, we'll skip this check
-      // and rely on the login data stored in context
-      setUser(null);
+      // Check localStorage for existing user data
+      const storedUser = localStorage.getItem('user');
+      const isLoggedIn = localStorage.getItem('isLoggedIn');
+
+      if (storedUser && isLoggedIn === 'true') {
+        const userData = JSON.parse(storedUser);
+        console.log('Restored user from localStorage:', userData);
+        setUser(userData);
+      } else {
+        console.log('No valid user data in localStorage');
+        setUser(null);
+      }
     } catch (error) {
       console.log('Auth check failed:', error);
+      // Clear potentially corrupted data
+      localStorage.removeItem('user');
+      localStorage.removeItem('isLoggedIn');
       setUser(null);
     } finally {
       setLoading(false);
@@ -33,7 +45,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = (userData, role) => {
-    setUser({ ...userData, role });
+    const userWithRole = { ...userData, role };
+    setUser(userWithRole);
+
+    // Persist to localStorage
+    localStorage.setItem('user', JSON.stringify(userWithRole));
+    localStorage.setItem('isLoggedIn', 'true');
+
+    console.log('User logged in and saved to localStorage:', userWithRole);
   };
 
   const logout = async () => {
@@ -47,8 +66,13 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.log('Logout request failed:', error);
     }
-    
+
+    // Clear localStorage
+    localStorage.removeItem('user');
+    localStorage.removeItem('isLoggedIn');
+
     setUser(null);
+    console.log('User logged out and localStorage cleared');
   };
 
   const isAdmin = () => {
