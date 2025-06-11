@@ -258,16 +258,16 @@ const DetailPeminjaman = () => {
   if (loading) {
     return (
       <div className="min-h-screen relative">
-        <div 
+        <div
           className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: 'url(/fixbg.jpg)', backgroundAttachment: 'fixed' }}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/85 to-blue-50/90 backdrop-blur-sm"></div>
         </div>
         <div className="relative z-10 flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-[#096B68] border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-lg text-slate-600">Memuat riwayat peminjaman...</p>
+          <div className="text-center bg-white/95 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/30">
+            <div className="w-16 h-16 border-4 border-[#096B68] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-lg text-slate-600 font-medium">Memuat riwayat peminjaman...</p>
           </div>
         </div>
       </div>

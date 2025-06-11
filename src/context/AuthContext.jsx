@@ -57,14 +57,24 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      // Call logout endpoint if available
-      await fetch('https://pweb-be-production.up.railway.app/user/logout', {
+      // Try logout endpoint, but don't fail if it doesn't exist
+      const response = await fetch('https://pweb-be-production.up.railway.app/auth/logout', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' }
       });
+
+      // If 404, try alternative endpoint
+      if (!response.ok && response.status === 404) {
+        await fetch('https://pweb-be-production.up.railway.app/logout', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
     } catch (error) {
-      console.log('Logout request failed:', error);
+      // Logout should work even if server endpoint fails
+      console.log('Logout request failed, proceeding with local logout:', error);
     }
 
     // Clear localStorage

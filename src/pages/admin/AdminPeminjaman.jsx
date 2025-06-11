@@ -58,18 +58,26 @@ const AdminPeminjaman = () => {
       setLoading(true);
       setError(null);
 
+      // Create AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
       const [peminjamanRes, usersRes] = await Promise.all([
         fetch('https://pweb-be-production.up.railway.app/peminjaman', {
           method: 'GET',
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal
         }),
         fetch('https://pweb-be-production.up.railway.app/user', {
           method: 'GET',
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal
         })
       ]);
+
+      clearTimeout(timeoutId);
 
       const peminjamanData = peminjamanRes.ok ? await peminjamanRes.json() : [];
       const usersData = usersRes.ok ? await usersRes.json() : [];
@@ -79,7 +87,15 @@ const AdminPeminjaman = () => {
 
     } catch (err) {
       console.error('Error fetching data:', err);
-      setError('Failed to load data');
+
+      let errorMessage = 'Failed to load data';
+      if (err.name === 'AbortError') {
+        errorMessage = 'Request timeout. Please check your connection and try again.';
+      } else if (err.message.includes('Failed to fetch')) {
+        errorMessage = 'Network error. Please check your internet connection.';
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -150,6 +166,10 @@ const AdminPeminjaman = () => {
         (editingPeminjaman.status === 'dikembalikan' || editingPeminjaman.status === 'aktif' || editingPeminjaman.status === 'dipinjam' || editingPeminjaman.status === 'terlambat') &&
         formData.status === 'selesai';
 
+      // Create AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
       const response = await fetch(url, {
         method,
         credentials: 'include',
@@ -157,11 +177,15 @@ const AdminPeminjaman = () => {
         body: JSON.stringify({
           ...formData,
           id_pengguna: parseInt(formData.id_pengguna)
-        })
+        }),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error(`Failed to ${editingPeminjaman ? 'update' : 'create'} peminjaman`);
+        const errorText = await response.text();
+        throw new Error(`Failed to ${editingPeminjaman ? 'update' : 'create'} peminjaman: ${response.status} ${errorText}`);
       }
 
       // Jika status berubah menjadi selesai, kembalikan stok
@@ -181,10 +205,18 @@ const AdminPeminjaman = () => {
       alert.showSuccess('Success!', message);
     } catch (err) {
       console.error('Error saving peminjaman:', err);
-      alert.showError(
-        'Error!',
-        `Failed to ${editingPeminjaman ? 'update' : 'create'} peminjaman`
-      );
+
+      let errorMessage = `Failed to ${editingPeminjaman ? 'update' : 'create'} peminjaman`;
+
+      if (err.name === 'AbortError') {
+        errorMessage = 'Request timeout. Please check your connection and try again.';
+      } else if (err.message.includes('Failed to fetch')) {
+        errorMessage = 'Network error. Please check your internet connection.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      alert.showError('Error!', errorMessage);
     } finally {
       setSubmitLoading(false);
     }

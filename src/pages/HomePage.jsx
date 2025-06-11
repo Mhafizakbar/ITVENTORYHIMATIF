@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { AudioLines, ShoppingBag, Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import { AudioLines, ShoppingBag, Sparkles, Loader2, AlertCircle, X, Package, Calendar, Clock } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import { formatDateToIndonesian, formatDateShort } from '../utils/dateUtils';
 
 const HomePage = () => {
   // State untuk mengontrol expand/collapse
@@ -84,17 +85,33 @@ const HomePage = () => {
 
   // Fungsi untuk menghitung barang yang sedang dipinjam
   const getBarangDipinjam = () => {
-    const activePeminjaman = peminjamanData.filter(p => p.status === 'aktif');
-    const dipinjamIds = new Set();
+    // Filter peminjaman yang aktif (sedang dipinjam)
+    const activePeminjaman = peminjamanData.filter(p =>
+      p.status === 'aktif' || p.status === 'dipinjam' || p.status === 'dikembalikan'
+    );
+
+    const dipinjamData = [];
 
     activePeminjaman.forEach(peminjaman => {
       const details = detailData.filter(d => d.id_peminjaman === peminjaman.id_peminjaman);
       details.forEach(detail => {
-        dipinjamIds.add(detail.id_barang);
+        // Cari data barang lengkap
+        const barangInfo = barangData.find(b => b.id_barang === detail.id_barang);
+        if (barangInfo) {
+          dipinjamData.push({
+            ...barangInfo,
+            jumlah_dipinjam: detail.jumlah_pinjam,
+            tanggal_pinjam: peminjaman.tanggal_pinjam,
+            tanggal_kembali: peminjaman.tanggal_kembali,
+            status_peminjaman: peminjaman.status,
+            id_peminjaman: peminjaman.id_peminjaman,
+            id_detail: detail.id_detail
+          });
+        }
       });
     });
 
-    return Array.from(dipinjamIds);
+    return dipinjamData;
   };
 
   // Fungsi untuk mengelompokkan data berdasarkan status
@@ -105,17 +122,40 @@ const HomePage = () => {
       tidak_tersedia: { Audio: [], Furniture: [], Aksesoris: [], Lainnya: [] }
     };
 
-    const barangDipinjamIds = getBarangDipinjam();
+    const barangDipinjamData = getBarangDipinjam();
+    const barangDipinjamIds = barangDipinjamData.map(item => item.id_barang);
 
+    // Proses barang yang sedang dipinjam
+    barangDipinjamData.forEach(item => {
+      const kategoriName = getKategoriName(item.id_kategori);
+
+      if (!grouped.dipinjam[kategoriName]) {
+        grouped.dipinjam[kategoriName] = [];
+      }
+
+      grouped.dipinjam[kategoriName].push({
+        ...item,
+        kategori: { nama_kategori: kategoriName },
+        status: 'dipinjam',
+        // Tampilkan jumlah yang dipinjam, bukan stok total
+        jumlah: item.jumlah_dipinjam,
+        deskripsi: `${item.deskripsi || 'Tidak ada deskripsi'} (Dipinjam: ${item.jumlah_dipinjam} unit)`
+      });
+    });
+
+    // Proses barang lainnya (tersedia dan tidak tersedia)
     barangData.forEach(item => {
       const kategoriName = getKategoriName(item.id_kategori);
 
-      // Tentukan status berdasarkan stok dan peminjaman
+      // Skip jika barang sedang dipinjam (sudah diproses di atas)
+      if (barangDipinjamIds.includes(item.id_barang)) {
+        return;
+      }
+
+      // Tentukan status berdasarkan stok
       let status;
       if (item.jumlah === 0) {
         status = 'tidak_tersedia';
-      } else if (barangDipinjamIds.includes(item.id_barang)) {
-        status = 'dipinjam';
       } else {
         status = 'tersedia';
       }
@@ -275,6 +315,36 @@ const HomePage = () => {
         .delay-500 {
           animation-delay: 0.5s;
         }
+
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
       `}</style>
 
       <div className="min-h-screen page-background">
@@ -283,10 +353,10 @@ const HomePage = () => {
 
           {/* Loading State */}
           {loading && (
-            <div className="flex items-center justify-center min-h-[60vh]">
-              <div className="text-center">
-                <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-[#096B68]" />
-                <p className="text-lg text-gray-600">Memuat data inventaris...</p>
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="text-center bg-white/95 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/30">
+                <Loader2 className="w-16 h-16 animate-spin mx-auto mb-4 text-[#096B68]" />
+                <p className="text-lg text-gray-600 font-medium">Memuat data inventaris...</p>
               </div>
             </div>
           )}
@@ -466,104 +536,168 @@ const HomePage = () => {
                     </div>
                   </div>
 
-                  {/* Expanded Detail Card */}
+                  {/* Modal Detail Barang */}
                   {expandedCard && (
-                    <div className="animate-expand bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-xl border-2 border-gray-200">
-                      <div className="flex items-center justify-between mb-4 sm:mb-6">
-                        <h4 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 pr-2">
-                          Detail Barang {expandedCard === 'tersedia' ? 'Tersedia' : expandedCard === 'dipinjam' ? 'Dipinjam' : 'Tidak Tersedia'}
-                        </h4>
-                        <button
-                          onClick={() => setExpandedCard(null)}
-                          className="text-gray-500 hover:text-gray-700 transition-colors duration-200 p-1 flex-shrink-0"
-                        >
-                          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
+                    <div className="fixed inset-0 z-50 p-4 animate-fade-in-up">
+                      {/* Background with same image as main page */}
+                      <div
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                        style={{ backgroundImage: `url(${backgroundImage})`, backgroundAttachment: 'fixed' }}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/70 backdrop-blur-md"></div>
                       </div>
 
-                      {/* Category Cards Grid */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                        {Object.entries(categoryIcons).map(([kategori, IconComponent]) => (
-                          <div
-                            key={kategori}
-                            className={`p-4 sm:p-5 lg:p-6 rounded-xl sm:rounded-2xl border-2 shadow-lg transition-all duration-300 hover:shadow-xl ${
-                              expandedCard === 'tersedia' ? 'bg-green-50 border-green-200 hover:border-green-300' :
-                              expandedCard === 'dipinjam' ? 'bg-yellow-50 border-yellow-200 hover:border-yellow-300' :
-                              'bg-red-50 border-red-200 hover:border-red-300'
-                            }`}
-                          >
-                            {/* Category Header */}
-                            <div className="flex items-center space-x-2 sm:space-x-3 mb-4 sm:mb-6">
-                              <div className={`p-2 sm:p-3 rounded-full ${
-                                expandedCard === 'tersedia' ? 'bg-green-100' :
-                                expandedCard === 'dipinjam' ? 'bg-yellow-100' :
-                                'bg-red-100'
-                              }`}>
-                                <IconComponent className={`w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 ${
-                                  expandedCard === 'tersedia' ? 'text-green-600' :
-                                  expandedCard === 'dipinjam' ? 'text-yellow-600' :
-                                  'text-red-600'
-                                }`} />
-                              </div>
-                              <div>
-                                <h5 className="text-lg sm:text-xl font-bold text-gray-800">{kategori}</h5>
-                                <p className="text-xs sm:text-sm text-gray-600">
-                                  {groupedData[expandedCard][kategori]?.length || 0} item(s)
-                                </p>
-                              </div>
-                            </div>
+                      {/* Modal Container */}
+                      <div className="relative flex items-center justify-center min-h-full">
+                        <div className="bg-white/95 backdrop-blur-xl rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl border border-white/40 animate-slide-up">
+                          {/* Modal Header */}
+                          <div className="flex items-center justify-between p-6 border-b border-gray-200/50 bg-gradient-to-r from-white/95 to-gray-50/95 backdrop-blur-lg">
+                            <h2 className="text-2xl font-bold text-gray-900">
+                              Detail Barang {expandedCard === 'tersedia' ? 'Tersedia' : expandedCard === 'dipinjam' ? 'Dipinjam' : 'Tidak Tersedia'}
+                            </h2>
+                            <button
+                              onClick={() => setExpandedCard(null)}
+                              className="text-gray-500 hover:text-gray-700 transition-colors duration-200 p-2 hover:bg-white/70 rounded-full backdrop-blur-sm"
+                            >
+                              <X className="w-6 h-6" />
+                            </button>
+                          </div>
 
-                            {/* Items List */}
-                            <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-80 lg:max-h-96 overflow-y-auto">
-                              {groupedData[expandedCard][kategori]?.length > 0 ? (
-                                groupedData[expandedCard][kategori].map((item) => (
-                                  <div
-                                    key={item.id_barang}
-                                    className={`p-3 sm:p-4 rounded-lg sm:rounded-xl border transition-all duration-200 hover:shadow-md ${
-                                      expandedCard === 'tersedia' ? 'bg-white border-green-200 hover:border-green-300' :
-                                      expandedCard === 'dipinjam' ? 'bg-white border-yellow-200 hover:border-yellow-300' :
-                                      'bg-white border-red-200 hover:border-red-300'
-                                    }`}
-                                  >
-                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-2 sm:space-y-0">
-                                      <div className="flex-1 sm:pr-3">
-                                        <h6 className="font-semibold text-gray-800 text-sm sm:text-base mb-1">{item.nama_barang}</h6>
-                                        <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">{item.deskripsi}</p>
-                                      </div>
-                                      <div className="flex-shrink-0 self-start sm:self-auto">
-                                        <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-bold ${
-                                          expandedCard === 'tersedia' ? 'bg-green-100 text-green-700' :
-                                          expandedCard === 'dipinjam' ? 'bg-yellow-100 text-yellow-700' :
-                                          'bg-red-100 text-red-700'
-                                        }`}>
-                                          {item.jumlah} unit
-                                        </span>
-                                      </div>
+                          {/* Modal Content */}
+                          <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)] bg-gradient-to-br from-white/90 via-white/85 to-gray-50/90 backdrop-blur-lg">
+                            {/* Category Cards Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                              {Object.entries(categoryIcons).map(([kategori, IconComponent]) => {
+                              const items = groupedData[expandedCard][kategori] || [];
+                              const categoryColors = {
+                                Audio: {
+                                  bg: 'bg-gradient-to-br from-green-50 to-green-100',
+                                  border: 'border-green-200',
+                                  icon: 'text-green-600',
+                                  text: 'text-green-700',
+                                  iconBg: 'bg-green-100'
+                                },
+                                Furniture: {
+                                  bg: 'bg-gradient-to-br from-blue-50 to-blue-100',
+                                  border: 'border-blue-200',
+                                  icon: 'text-blue-600',
+                                  text: 'text-blue-700',
+                                  iconBg: 'bg-blue-100'
+                                },
+                                Aksesoris: {
+                                  bg: 'bg-gradient-to-br from-purple-50 to-purple-100',
+                                  border: 'border-purple-200',
+                                  icon: 'text-purple-600',
+                                  text: 'text-purple-700',
+                                  iconBg: 'bg-purple-100'
+                                },
+                                Lainnya: {
+                                  bg: 'bg-gradient-to-br from-gray-50 to-gray-100',
+                                  border: 'border-gray-200',
+                                  icon: 'text-gray-600',
+                                  text: 'text-gray-700',
+                                  iconBg: 'bg-gray-100'
+                                }
+                              };
+                              const colors = categoryColors[kategori] || categoryColors.Lainnya;
+
+                              return (
+                                <div
+                                  key={kategori}
+                                  className={`${colors.bg} ${colors.border} border-2 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 backdrop-blur-lg bg-opacity-95 relative overflow-hidden`}
+                                >
+                                  {/* Background Pattern */}
+                                  <div className="absolute inset-0 opacity-5">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+                                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
+                                  </div>
+
+                                  {/* Content */}
+                                  <div className="relative z-10">
+                                  {/* Category Header */}
+                                  <div className="flex items-center space-x-3 mb-6">
+                                    <div className={`p-3 ${colors.iconBg} rounded-xl shadow-sm border ${colors.border}`}>
+                                      <IconComponent className={`w-6 h-6 ${colors.icon}`} />
+                                    </div>
+                                    <div>
+                                      <h3 className={`text-xl font-bold ${colors.text}`}>{kategori}</h3>
+                                      <p className="text-sm text-gray-600">{items.length} item(s)</p>
                                     </div>
                                   </div>
-                                ))
-                              ) : (
-                                <div className="text-center py-8 sm:py-12">
-                                  <div className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full flex items-center justify-center ${
-                                    expandedCard === 'tersedia' ? 'bg-green-100' :
-                                    expandedCard === 'dipinjam' ? 'bg-yellow-100' :
-                                    'bg-red-100'
-                                  }`}>
-                                    <IconComponent className={`w-6 h-6 sm:w-8 sm:h-8 ${
-                                      expandedCard === 'tersedia' ? 'text-green-400' :
-                                      expandedCard === 'dipinjam' ? 'text-yellow-400' :
-                                      'text-red-400'
-                                    }`} />
+
+                                  {/* Items List */}
+                                  <div className="space-y-3 max-h-80 overflow-y-auto custom-scrollbar">
+                                    {items.length > 0 ? (
+                                      items.map((item, index) => (
+                                        <div
+                                          key={item.id_barang}
+                                          className="bg-white/95 backdrop-blur-lg rounded-xl p-4 border border-gray-200/50 hover:border-gray-300/70 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 shadow-sm"
+                                          style={{ animationDelay: `${index * 0.1}s` }}
+                                        >
+                                          <div className="flex justify-between items-start">
+                                            <div className="flex-1 pr-3">
+                                              <h4 className="font-semibold text-gray-800 text-base mb-1">{item.nama_barang}</h4>
+                                              <p className="text-gray-600 text-sm leading-relaxed line-clamp-2 mb-2">
+                                                {expandedCard === 'dipinjam' ?
+                                                  (item.deskripsi?.replace(/\(Dipinjam:.*\)/, '') || 'Tidak ada deskripsi') :
+                                                  (item.deskripsi || 'Tidak ada deskripsi')
+                                                }
+                                              </p>
+
+                                              {/* Tampilkan info tanggal untuk barang dipinjam */}
+                                              {expandedCard === 'dipinjam' && item.tanggal_pinjam && (
+                                                <div className="flex flex-col space-y-1 text-xs text-gray-500">
+                                                  <div className="flex items-center space-x-1">
+                                                    <Calendar className="w-3 h-3" />
+                                                    <span>Dipinjam: {formatDateShort(item.tanggal_pinjam, true)}</span>
+                                                  </div>
+                                                  {item.tanggal_kembali && (
+                                                    <div className="flex items-center space-x-1">
+                                                      <Clock className="w-3 h-3" />
+                                                      <span>Kembali: {formatDateShort(item.tanggal_kembali, true)}</span>
+                                                    </div>
+                                                  )}
+                                                  <div className="flex items-center space-x-1">
+                                                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                                                      item.status_peminjaman === 'dikembalikan' ? 'bg-purple-100 text-purple-700' :
+                                                      item.status_peminjaman === 'aktif' || item.status_peminjaman === 'dipinjam' ? 'bg-yellow-100 text-yellow-700' :
+                                                      'bg-gray-100 text-gray-700'
+                                                    }`}>
+                                                      Status: {item.status_peminjaman || 'dipinjam'}
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                              )}
+                                            </div>
+                                            <div className="flex-shrink-0">
+                                              <span className={`px-3 py-1.5 rounded-full text-sm font-bold ${colors.text} ${colors.iconBg} border ${colors.border} shadow-sm`}>
+                                                {item.jumlah} unit
+                                              </span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))
+                                    ) : (
+                                      <div className="text-center py-12 relative">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-lg"></div>
+                                        <div className="relative z-10">
+                                          <div className={`w-16 h-16 mx-auto mb-4 ${colors.iconBg} rounded-full flex items-center justify-center shadow-lg border-2 ${colors.border} backdrop-blur-sm`}>
+                                            <IconComponent className={`w-8 h-8 ${colors.icon}`} />
+                                          </div>
+                                          <p className="text-gray-600 font-semibold text-base mb-1">Tidak ada barang</p>
+                                          <p className="text-gray-500 text-sm">dalam kategori ini</p>
+                                        </div>
+                                      </div>
+                                    )}
                                   </div>
-                                  <p className="text-gray-500 font-medium text-sm sm:text-base">Tidak ada barang</p>
-                                  <p className="text-gray-400 text-xs sm:text-sm">dalam kategori ini</p>
+                                  </div>
                                 </div>
-                              )}
+                                );
+                              })}
                             </div>
                           </div>
-                        ))}
+                        </div>
                       </div>
                     </div>
                   )}

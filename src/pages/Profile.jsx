@@ -143,11 +143,10 @@ const Profile = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#E8F5F3] to-[#F0F9FF]">
-        <Navbar />
-        <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-16 flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 animate-spin mx-auto mb-4 text-[#096B68]" />
-            <p className="text-base sm:text-lg text-slate-600">Memuat data profile...</p>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center bg-white/95 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/30">
+            <Loader2 className="w-16 h-16 animate-spin mx-auto mb-4 text-[#096B68]" />
+            <p className="text-lg text-slate-600 font-medium">Memuat data profile...</p>
           </div>
         </div>
       </div>

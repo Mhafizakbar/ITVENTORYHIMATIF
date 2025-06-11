@@ -161,9 +161,9 @@ const Barang = () => {
     return (
       <div className="min-h-screen relative">
         {/* Background Image */}
-        <div 
+        <div
           className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
-          style={{ 
+          style={{
             backgroundImage: 'url(https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80)',
             backgroundAttachment: 'fixed'
           }}
@@ -171,13 +171,10 @@ const Barang = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/85 to-blue-50/90 backdrop-blur-sm"></div>
         </div>
 
-        <div className="relative z-10">
-          <Navbar />
-          <div className="container mx-auto px-6 py-16 flex items-center justify-center min-h-[60vh]">
-            <div className="text-center">
-              <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-[#096B68]" />
-              <p className="text-lg text-slate-600">Memuat data inventaris...</p>
-            </div>
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="text-center bg-white/95 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/30">
+            <Loader2 className="w-16 h-16 animate-spin mx-auto mb-4 text-[#096B68]" />
+            <p className="text-lg text-slate-600 font-medium">Memuat data inventaris...</p>
           </div>
         </div>
       </div>

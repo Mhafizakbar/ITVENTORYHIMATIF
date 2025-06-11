@@ -66,47 +66,67 @@ const LoginPage = () => {
   };
 
   // Handle Login Submit
-  const handleLoginSubmit = () => {
+  const handleLoginSubmit = async () => {
     setLoading(true);
     setErrorMessage('');
 
-    fetch('https://pweb-be-production.up.railway.app/user/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({
-        email: loginEmail,
-        password: loginPassword,
-      }),
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Login failed');
-        return res.json();
-      })
-      .then(data => {
-        setLoading(false);
-        console.log('Login success:', data);
+    try {
+      // Create AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-        // Save user data to context
-        const userData = {
+      const response = await fetch('https://pweb-be-production.up.railway.app/user/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
           email: loginEmail,
-          role: data.data
-        };
-        login(userData, data.data);
-
-        // Check user role and redirect accordingly
-        if (data.data === 'ADMIN') {
-          alert.showSuccess('Welcome Admin!', 'Login admin berhasil! Mengarahkan ke dashboard admin...');
-          setTimeout(() => navigate('/admin'), 1500);
-        } else {
-          alert.showSuccess('Welcome!', 'Login berhasil!');
-          setTimeout(() => navigate('/home'), 1500);
-        }
-      })
-      .catch(err => {
-        setLoading(false);
-        setErrorMessage('Email atau password salah.');
+          password: loginPassword,
+        }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Login failed: ${response.status} ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('Login success:', data);
+
+      // Save user data to context
+      const userData = {
+        email: loginEmail,
+        role: data.data
+      };
+      login(userData, data.data);
+
+      // Check user role and redirect accordingly
+      if (data.data === 'ADMIN') {
+        alert.showSuccess('Welcome Admin!', 'Login admin berhasil! Mengarahkan ke dashboard admin...');
+        setTimeout(() => navigate('/admin'), 1500);
+      } else {
+        alert.showSuccess('Welcome!', 'Login berhasil!');
+        setTimeout(() => navigate('/home'), 1500);
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+
+      let errorMessage = 'Email atau password salah.';
+      if (err.name === 'AbortError') {
+        errorMessage = 'Request timeout. Please check your connection and try again.';
+      } else if (err.message.includes('Failed to fetch')) {
+        errorMessage = 'Network error. Please check your internet connection.';
+      } else if (err.message.includes('401')) {
+        errorMessage = 'Email atau password salah.';
+      }
+
+      setErrorMessage(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Handle Register Submit
