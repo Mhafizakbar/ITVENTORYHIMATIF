@@ -55,6 +55,15 @@ const Loan = () => {
           },
         });
 
+        if (response.status === 401) {
+          // Clear localStorage and redirect to login
+          localStorage.removeItem('user');
+          localStorage.removeItem('isLoggedIn');
+          setError('Sesi tidak valid. Silakan login kembali.');
+          navigate('/');
+          return;
+        }
+
         if (!response.ok) {
           throw new Error(`Error fetching barang: ${response.status} ${response.statusText}`);
         }
@@ -192,6 +201,14 @@ const Loan = () => {
             }),
           });
 
+          if (updateResponse.status === 401) {
+            // Clear localStorage and redirect to login
+            localStorage.removeItem('user');
+            localStorage.removeItem('isLoggedIn');
+            console.error('Session expired during stock update');
+            return;
+          }
+
           if (!updateResponse.ok) {
             console.error(`Failed to update stock for barang ${barang.id_barang}`);
           }
@@ -240,6 +257,15 @@ const Loan = () => {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' }
       });
+
+      if (usersResponse.status === 401) {
+        // Clear localStorage and redirect to login
+        localStorage.removeItem('user');
+        localStorage.removeItem('isLoggedIn');
+        alert.showError('Session Expired', 'Sesi Anda telah berakhir. Silakan login ulang.');
+        setTimeout(() => navigate('/'), 2000);
+        return;
+      }
 
       if (usersResponse.ok) {
         const users = await usersResponse.json();

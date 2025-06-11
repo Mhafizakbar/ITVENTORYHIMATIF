@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AudioLines, ShoppingBag, Sparkles, ChevronDown, Package, Loader2, AlertCircle } from 'lucide-react';
 import Navbar from '../components/Navbar';
 
@@ -7,6 +8,7 @@ import Navbar from '../components/Navbar';
 
 
 const Barang = () => {
+  const navigate = useNavigate();
   const [expandedCategory, setExpandedCategory] = useState(null);
   const [itemsData, setItemsData] = useState([]);
   const [categoriesData, setCategoriesData] = useState([]);
@@ -39,6 +41,15 @@ const Barang = () => {
             }
           })
         ]);
+
+        if (barangResponse.status === 401 || kategoriResponse.status === 401) {
+          // Clear localStorage and redirect to login
+          localStorage.removeItem('user');
+          localStorage.removeItem('isLoggedIn');
+          setError('Sesi tidak valid. Silakan login kembali.');
+          navigate('/');
+          return;
+        }
 
         if (!barangResponse.ok) {
           throw new Error(`Error fetching barang: ${barangResponse.status} ${barangResponse.statusText}`);

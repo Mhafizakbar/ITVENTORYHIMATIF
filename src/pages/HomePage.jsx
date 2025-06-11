@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { AudioLines, ShoppingBag, Sparkles, Loader2, AlertCircle, X, Package, Calendar, Clock } from 'lucide-react';
+import { AudioLines, ShoppingBag, Sparkles, Loader2, AlertCircle, X, Package, Calendar, Clock, Users, ArrowDown, Code, Heart } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import ContributorSection from '../components/ContributorSection';
 import { formatDateToIndonesian, formatDateShort } from '../utils/dateUtils';
 
 const HomePage = () => {
@@ -195,6 +196,17 @@ const HomePage = () => {
   // Fungsi untuk toggle expand card
   const toggleCard = (cardType) => {
     setExpandedCard(expandedCard === cardType ? null : cardType);
+  };
+
+  // Fungsi untuk smooth scroll ke section kontributor
+  const scrollToContributors = () => {
+    const contributorsSection = document.getElementById('contributors');
+    if (contributorsSection) {
+      contributorsSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
   };
 
   return (
@@ -425,6 +437,83 @@ const HomePage = () => {
                       {/* Decorative Elements */}
                       <div className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 w-6 h-6 sm:w-8 sm:h-8 bg-[#096B68] rounded-full animate-bounce delay-300"></div>
                       <div className="absolute -bottom-3 -left-3 sm:-bottom-6 sm:-left-6 w-4 h-4 sm:w-6 sm:h-6 bg-[#90D1CA] rounded-full animate-bounce delay-500"></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contributors Link Section */}
+                <div className="max-w-4xl mx-auto mb-16">
+                  <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 sm:p-12 shadow-xl border border-white/50 relative overflow-hidden group animate-slide-up delay-500">
+                    {/* Background Decoration */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#096B68]/5 to-[#90D1CA]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#90D1CA]/20 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-[#096B68]/20 to-transparent rounded-full translate-y-12 -translate-x-12"></div>
+
+                    <div className="relative z-10 text-center">
+                      {/* Header */}
+                      <div className="mb-8">
+                        <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#096B68]/10 to-[#90D1CA]/10 px-6 py-3 rounded-full border border-[#096B68]/20 mb-6">
+                          <Users className="w-5 h-5 text-[#096B68]" />
+                          <span className="text-[#096B68] font-semibold">Tim Pengembang</span>
+                        </div>
+
+                        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+                          Kenali <span className="text-[#90D1CA]">Tim Kami</span>
+                        </h2>
+
+                        <p className="text-gray-600 text-lg max-w-2xl mx-auto leading-relaxed mb-6">
+                          Aplikasi inventaris HIMATIF ini dikembangkan oleh tim yang berdedikasi untuk kemudahan mahasiswa dalam mengelola peminjaman barang di lingkungan HIMATIF.
+                        </p>
+
+                        <div className="flex items-center justify-center space-x-2 mb-8">
+                          <Heart className="w-5 h-5 text-red-500 animate-pulse" />
+                          <span className="text-gray-500 text-sm">ITVENTORY TEAM</span>
+                        </div>
+                      </div>
+
+                      {/* Call to Action Button */}
+                      <button
+                        onClick={scrollToContributors}
+                        className="group/btn relative inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-[#096B68] to-[#90D1CA] text-white font-bold rounded-2xl hover:from-[#085854] hover:to-[#7BC4BD] transition-all duration-500 transform hover:scale-105 hover:-translate-y-1 shadow-xl hover:shadow-2xl overflow-hidden"
+                      >
+                        {/* Shimmer Effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000"></div>
+
+                        {/* Glow Effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#096B68]/20 to-[#90D1CA]/20 blur-xl group-hover/btn:blur-2xl transition-all duration-500"></div>
+
+                        {/* Content */}
+                        <div className="relative z-10 flex items-center space-x-3">
+                          <div className="p-2 bg-white/20 rounded-xl group-hover/btn:rotate-12 transition-transform duration-500">
+                            <Code className="w-5 h-5" />
+                          </div>
+                          <span className="text-lg font-black tracking-wide">Lihat Tim Pengembang</span>
+                          <div className="group-hover/btn:translate-y-1 transition-transform duration-300">
+                            <ArrowDown className="w-5 h-5 animate-bounce" />
+                          </div>
+                        </div>
+
+                        {/* Floating Particles */}
+                        <div className="absolute top-1 left-4 w-1 h-1 bg-white rounded-full opacity-60 group-hover/btn:animate-ping"></div>
+                        <div className="absolute bottom-1 right-6 w-1 h-1 bg-white rounded-full opacity-40 group-hover/btn:animate-ping" style={{animationDelay: '0.3s'}}></div>
+                        <div className="absolute top-2 right-4 w-1 h-1 bg-white rounded-full opacity-50 group-hover/btn:animate-ping" style={{animationDelay: '0.6s'}}></div>
+                      </button>
+
+                      {/* Additional Info */}
+                      <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+                        <div className="group/stat">
+                          <div className="text-2xl font-bold text-[#096B68] group-hover/stat:scale-110 transition-transform duration-300">3</div>
+                          <div className="text-sm text-gray-600 font-medium">Developers</div>
+                        </div>
+                        <div className="group/stat">
+                          <div className="text-2xl font-bold text-[#90D1CA] group-hover/stat:scale-110 transition-transform duration-300">100%</div>
+                          <div className="text-sm text-gray-600 font-medium">Dedication</div>
+                        </div>
+                        <div className="group/stat">
+                          <div className="text-2xl font-bold text-[#096B68] group-hover/stat:scale-110 transition-transform duration-300">∞</div>
+                          <div className="text-sm text-gray-600 font-medium">Innovation</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -703,6 +792,9 @@ const HomePage = () => {
                   )}
                 </div>
               </div>
+
+              {/* Contributors Section */}
+              <ContributorSection />
             </div>
           )}
         </div>

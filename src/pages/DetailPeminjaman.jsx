@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Package, Clock, CheckCircle, Search, Filter, AudioLines, ShoppingBag, Sparkles, TrendingUp, Activity, RotateCcw, Star, Award, Zap, RefreshCw } from 'lucide-react';
+import { Calendar, Package, Clock, CheckCircle, Search, Filter, AudioLines, ShoppingBag, Sparkles, TrendingUp, Activity, RotateCcw, Star, Award, Zap, RefreshCw, Laptop, Mic, Monitor, Headphones, Speaker, Camera, Gamepad2, Keyboard, Mouse, Printer, Tablet, Smartphone, Tv, Projector, HardDrive, Usb, Wifi, Router, Cable, Plug } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { DateHeader } from '../components/RealTimeDate';
 import { TimezoneInfo } from '../components/IndonesiaTimezone';
@@ -117,16 +117,75 @@ const DetailPeminjaman = () => {
     };
   };
 
-  const getCategoryIcon = (kategori) => {
+  const getCategoryIcon = (kategori, namaBarang = '') => {
+    const namaLower = namaBarang.toLowerCase();
+
+    // Cek berdasarkan nama barang terlebih dahulu untuk icon yang lebih spesifik
+    if (namaLower.includes('laptop') || namaLower.includes('notebook')) {
+      return { icon: Laptop, color: 'text-white', bg: 'bg-gradient-to-br from-slate-600 to-slate-800' };
+    }
+    if (namaLower.includes('microphone') || namaLower.includes('mic') || namaLower.includes('mikrofon')) {
+      return { icon: Mic, color: 'text-white', bg: 'bg-gradient-to-br from-purple-500 to-purple-700' };
+    }
+    if (namaLower.includes('monitor') || namaLower.includes('layar')) {
+      return { icon: Monitor, color: 'text-white', bg: 'bg-gradient-to-br from-blue-500 to-blue-700' };
+    }
+    if (namaLower.includes('headphone') || namaLower.includes('headset')) {
+      return { icon: Headphones, color: 'text-white', bg: 'bg-gradient-to-br from-green-500 to-green-700' };
+    }
+    if (namaLower.includes('speaker') || namaLower.includes('sound')) {
+      return { icon: Speaker, color: 'text-white', bg: 'bg-gradient-to-br from-orange-500 to-orange-700' };
+    }
+    if (namaLower.includes('camera') || namaLower.includes('kamera')) {
+      return { icon: Camera, color: 'text-white', bg: 'bg-gradient-to-br from-pink-500 to-pink-700' };
+    }
+    if (namaLower.includes('keyboard') || namaLower.includes('papan ketik')) {
+      return { icon: Keyboard, color: 'text-white', bg: 'bg-gradient-to-br from-indigo-500 to-indigo-700' };
+    }
+    if (namaLower.includes('mouse') || namaLower.includes('tetikus')) {
+      return { icon: Mouse, color: 'text-white', bg: 'bg-gradient-to-br from-cyan-500 to-cyan-700' };
+    }
+    if (namaLower.includes('printer') || namaLower.includes('pencetak')) {
+      return { icon: Printer, color: 'text-white', bg: 'bg-gradient-to-br from-gray-500 to-gray-700' };
+    }
+    if (namaLower.includes('tablet') || namaLower.includes('ipad')) {
+      return { icon: Tablet, color: 'text-white', bg: 'bg-gradient-to-br from-teal-500 to-teal-700' };
+    }
+    if (namaLower.includes('phone') || namaLower.includes('smartphone') || namaLower.includes('hp')) {
+      return { icon: Smartphone, color: 'text-white', bg: 'bg-gradient-to-br from-emerald-500 to-emerald-700' };
+    }
+    if (namaLower.includes('tv') || namaLower.includes('television') || namaLower.includes('televisi')) {
+      return { icon: Tv, color: 'text-white', bg: 'bg-gradient-to-br from-red-500 to-red-700' };
+    }
+    if (namaLower.includes('projector') || namaLower.includes('proyektor')) {
+      return { icon: Projector, color: 'text-white', bg: 'bg-gradient-to-br from-amber-500 to-amber-700' };
+    }
+    if (namaLower.includes('harddisk') || namaLower.includes('hard disk') || namaLower.includes('hdd') || namaLower.includes('ssd')) {
+      return { icon: HardDrive, color: 'text-white', bg: 'bg-gradient-to-br from-violet-500 to-violet-700' };
+    }
+    if (namaLower.includes('usb') || namaLower.includes('flashdisk')) {
+      return { icon: Usb, color: 'text-white', bg: 'bg-gradient-to-br from-lime-500 to-lime-700' };
+    }
+    if (namaLower.includes('router') || namaLower.includes('wifi') || namaLower.includes('modem')) {
+      return { icon: Router, color: 'text-white', bg: 'bg-gradient-to-br from-sky-500 to-sky-700' };
+    }
+    if (namaLower.includes('cable') || namaLower.includes('kabel')) {
+      return { icon: Cable, color: 'text-white', bg: 'bg-gradient-to-br from-stone-500 to-stone-700' };
+    }
+    if (namaLower.includes('gamepad') || namaLower.includes('controller') || namaLower.includes('joystick')) {
+      return { icon: Gamepad2, color: 'text-white', bg: 'bg-gradient-to-br from-rose-500 to-rose-700' };
+    }
+
+    // Fallback ke kategori jika tidak ada match spesifik
     switch (kategori) {
       case 'Audio':
-        return { icon: AudioLines, color: 'text-[#FFFFFF]', bg: 'bg-[#096B68]' };
+        return { icon: AudioLines, color: 'text-white', bg: 'bg-gradient-to-br from-[#096B68] to-[#085854]' };
       case 'Furniture':
-        return { icon: ShoppingBag, color: 'text-[#FFFFFF]', bg: 'bg-[#90D1CA]' };
+        return { icon: ShoppingBag, color: 'text-white', bg: 'bg-gradient-to-br from-[#90D1CA] to-[#7BC4BD]' };
       case 'Aksesoris':
-        return { icon: Sparkles, color: 'text-[#FFFFFF]', bg: 'bg-[#FFD586]' };
+        return { icon: Sparkles, color: 'text-white', bg: 'bg-gradient-to-br from-[#FFD586] to-[#FFC947]' };
       default:
-        return { icon: Package, color: 'text-blue-600', bg: 'bg-blue-600' };
+        return { icon: Package, color: 'text-white', bg: 'bg-gradient-to-br from-blue-500 to-blue-700' };
     }
   };
 
@@ -735,7 +794,7 @@ const DetailPeminjaman = () => {
 
           <div className="space-y-8">
             {filteredData.map((item, index) => {
-              const categoryInfo = getCategoryIcon(item.kategori);
+              const categoryInfo = getCategoryIcon(item.kategori, item.namaBarang);
               const IconComponent = categoryInfo.icon;
               
               return (
@@ -769,7 +828,7 @@ const DetailPeminjaman = () => {
                             <div className="flex items-center space-x-6">
                               {/* Enhanced Category Icon */}
                               <div className="relative group/icon">
-                                <div className={`p-4 ${categoryInfo.bg} bg-opacity-20 rounded-2xl shadow-xl border border-white/50 group-hover:scale-110 transition-all duration-500`}>
+                                <div className={`p-4 ${categoryInfo.bg} rounded-2xl shadow-xl border border-white/50 group-hover:scale-110 transition-all duration-500`}>
                                   <IconComponent className={`w-10 h-10 ${categoryInfo.color} group-hover/icon:scale-110 transition-transform duration-300`} strokeWidth={2} />
                                 </div>
                                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full animate-pulse"></div>
@@ -782,7 +841,7 @@ const DetailPeminjaman = () => {
                                 </h3>
                                 <div className="flex items-center space-x-3">
                                   <span className="text-sm font-bold text-slate-600 uppercase tracking-wider">Kategori:</span>
-                                  <span className={`px-4 py-2 rounded-xl text-sm font-bold ${categoryInfo.bg} bg-opacity-30 ${categoryInfo.color} border-2 border-current border-opacity-40 shadow-lg hover:scale-105 transition-transform duration-300`}>
+                                  <span className={`px-4 py-2 rounded-xl text-sm font-bold ${categoryInfo.bg} ${categoryInfo.color} border-2 border-white/30 shadow-lg hover:scale-105 transition-transform duration-300`}>
                                     ✨ {item.kategori}
                                   </span>
                                 </div>
