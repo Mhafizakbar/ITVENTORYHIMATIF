@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
 import { 
   Users, 
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalBarang: 0,
@@ -33,7 +34,7 @@ const AdminDashboard = () => {
       setError(null);
 
       // Fetch data from all endpoints
-      const [barangRes, kategoriRes, peminjamanRes] = await Promise.all([
+      const [barangRes, kategoriRes, peminjamanRes, usersRes] = await Promise.all([
         fetch('https://pweb-be-production.up.railway.app/barang', {
           method: 'GET',
           credentials: 'include',
@@ -48,19 +49,35 @@ const AdminDashboard = () => {
           method: 'GET',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' }
+        }),
+        fetch('https://pweb-be-production.up.railway.app/user', {
+          method: 'GET',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
         })
       ]);
+
+      // Check for 401 errors (unauthorized)
+      if (barangRes.status === 401 || kategoriRes.status === 401 ||
+          peminjamanRes.status === 401 || usersRes.status === 401) {
+        localStorage.removeItem('user');
+        localStorage.removeItem('isLoggedIn');
+        setError('Sesi tidak valid. Silakan login kembali.');
+        navigate('/');
+        return;
+      }
 
       const barangData = barangRes.ok ? await barangRes.json() : [];
       const kategoriData = kategoriRes.ok ? await kategoriRes.json() : [];
       const peminjamanData = peminjamanRes.ok ? await peminjamanRes.json() : [];
+      const usersData = usersRes.ok ? await usersRes.json() : [];
 
       setStats({
-        totalUsers: 0, // Will need user endpoint
+        totalUsers: Array.isArray(usersData) ? usersData.length : 0,
         totalBarang: Array.isArray(barangData) ? barangData.length : 0,
         totalKategori: Array.isArray(kategoriData) ? kategoriData.length : 0,
         totalPeminjaman: Array.isArray(peminjamanData) ? peminjamanData.length : 0,
-        activePeminjaman: Array.isArray(peminjamanData) ? 
+        activePeminjaman: Array.isArray(peminjamanData) ?
           peminjamanData.filter(p => p.status !== 'selesai').length : 0
       });
 
