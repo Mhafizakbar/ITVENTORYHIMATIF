@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
 import FormModal, { FormInput, FormSelect } from '../../components/FormModal';
 import ConfirmDialog from '../../components/ConfirmDialog';
@@ -19,13 +20,14 @@ import {
 } from 'lucide-react';
 
 const AdminUsers = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingUser, setEditingUser] = useState(null);
   const [formData, setFormData] = useState({
-    nama: '',
+    nama_lengkap: '',
     email: '',
     password: '',
     no_telepon: '',
@@ -46,24 +48,91 @@ const AdminUsers = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      // Note: Adjust endpoint when user endpoint is available
-      const response = await fetch('https://pweb-be-production.up.railway.app/user', {
-        method: 'GET',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
-      });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch users');
+      // Try multiple endpoints to get user data
+      let response;
+      let userData = [];
+
+      // First try the main user endpoint
+      try {
+        response = await fetch('https://pweb-be-production.up.railway.app/user', {
+          method: 'GET',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        // Check for 401 errors first
+        if (response.status === 401) {
+          localStorage.removeItem('user');
+          localStorage.removeItem('isLoggedIn');
+          setError('Sesi tidak valid. Silakan login kembali.');
+          navigate('/');
+          return;
+        }
+
+        if (response.ok) {
+          userData = await response.json();
+          console.log('User data from /user endpoint:', userData);
+        }
+      } catch (err) {
+        console.log('Failed to fetch from /user endpoint:', err);
       }
 
-      const data = await response.json();
-      setUsers(Array.isArray(data) ? data : []);
+      // If no data or empty, try alternative endpoints
+      if (!userData || !Array.isArray(userData) || userData.length === 0) {
+        try {
+          // Try getting users from peminjaman data (users who have made loans)
+          const peminjamanResponse = await fetch('https://pweb-be-production.up.railway.app/peminjaman', {
+            method: 'GET',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+          });
+
+          if (peminjamanResponse.ok) {
+            const peminjamanData = await peminjamanResponse.json();
+            console.log('Peminjaman data for user extraction:', peminjamanData);
+
+            // Extract unique users from peminjaman data
+            const userMap = new Map();
+            if (Array.isArray(peminjamanData)) {
+              peminjamanData.forEach(peminjaman => {
+                if (peminjaman.id_pengguna && !userMap.has(peminjaman.id_pengguna)) {
+                  userMap.set(peminjaman.id_pengguna, {
+                    id_pengguna: peminjaman.id_pengguna,
+                    nama_lengkap: peminjaman.nama_peminjam || peminjaman.nama || 'User',
+                    email: `user${peminjaman.id_pengguna}@example.com`, // Placeholder
+                    no_telepon: peminjaman.no_telepon || '-',
+                    role: 'user',
+                    created_at: peminjaman.tanggal_pinjam || peminjaman.created_at
+                  });
+                }
+              });
+            }
+            userData = Array.from(userMap.values());
+            console.log('Extracted users from peminjaman:', userData);
+          }
+        } catch (err) {
+          console.log('Failed to extract users from peminjaman:', err);
+        }
+      }
+
+      // Process data to ensure all fields are available
+      // Based on register endpoint structure: nama_lengkap, email, no_telepon
+      const processedUsers = Array.isArray(userData) ? userData.map(user => ({
+        id_pengguna: user.id_pengguna || user.id,
+        nama: user.nama_lengkap || user.nama || user.name || 'N/A',
+        email: user.email || 'N/A',
+        no_telepon: user.no_telepon || user.phone || user.telepon || '-',
+        role: user.role || 'user',
+        created_at: user.created_at || user.createdAt || user.tanggal_dibuat || user.tanggal_daftar || user.tanggal_pinjam || null
+      })) : [];
+
+      console.log('Final processed user data:', processedUsers); // Debug log
+      setUsers(processedUsers);
     } catch (err) {
       console.error('Error fetching users:', err);
       setError('Failed to load users. Using mock data for demo.');
-      // Mock data for demonstration
+      // Mock data for demonstration with proper structure
       setUsers([
         {
           id_pengguna: 1,
@@ -80,6 +149,14 @@ const AdminUsers = () => {
           no_telepon: '081234567891',
           role: 'user',
           created_at: '2024-01-02'
+        },
+        {
+          id_pengguna: 3,
+          nama: 'Test User',
+          email: 'test@example.com',
+          no_telepon: '081234567892',
+          role: 'user',
+          created_at: '2024-01-03'
         }
       ]);
     } finally {
@@ -105,6 +182,14 @@ const AdminUsers = () => {
         body: JSON.stringify(formData)
       });
 
+      if (response.status === 401) {
+        localStorage.removeItem('user');
+        localStorage.removeItem('isLoggedIn');
+        alert.showError('Session Expired', 'Sesi Anda telah berakhir. Silakan login ulang.');
+        setTimeout(() => navigate('/'), 2000);
+        return;
+      }
+
       if (!response.ok) {
         throw new Error(`Failed to ${editingUser ? 'update' : 'create'} user`);
       }
@@ -112,7 +197,7 @@ const AdminUsers = () => {
       await fetchUsers();
       modal.closeModal();
       setEditingUser(null);
-      setFormData({ nama: '', email: '', password: '', no_telepon: '', role: 'user' });
+      setFormData({ nama_lengkap: '', email: '', password: '', no_telepon: '', role: 'user' });
 
       alert.showSuccess(
         'Success!',
@@ -141,6 +226,14 @@ const AdminUsers = () => {
             headers: { 'Content-Type': 'application/json' }
           });
 
+          if (response.status === 401) {
+            localStorage.removeItem('user');
+            localStorage.removeItem('isLoggedIn');
+            alert.showError('Session Expired', 'Sesi Anda telah berakhir. Silakan login ulang.');
+            setTimeout(() => navigate('/'), 2000);
+            return;
+          }
+
           if (!response.ok) {
             throw new Error('Failed to delete user');
           }
@@ -159,7 +252,7 @@ const AdminUsers = () => {
   const handleEdit = (user) => {
     setEditingUser(user);
     setFormData({
-      nama: user.nama || '',
+      nama_lengkap: user.nama || '',
       email: user.email || '',
       password: '',
       no_telepon: user.no_telepon || '',
@@ -170,7 +263,7 @@ const AdminUsers = () => {
 
   const handleAddNew = () => {
     setEditingUser(null);
-    setFormData({ nama: '', email: '', password: '', no_telepon: '', role: 'user' });
+    setFormData({ nama_lengkap: '', email: '', password: '', no_telepon: '', role: 'user' });
     modal.openModal();
   };
 
@@ -205,7 +298,7 @@ const AdminUsers = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
               type="text"
-              placeholder="Search users..."
+              placeholder="Cari user..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#096b68] focus:border-transparent"
@@ -254,19 +347,19 @@ const AdminUsers = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{user.no_telepon}</div>
+                        <div className="text-sm text-gray-900">{user.no_telepon || '-'}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          user.role === 'admin' 
-                            ? 'bg-red-100 text-red-800' 
+                          user.role === 'admin'
+                            ? 'bg-red-100 text-red-800'
                             : 'bg-green-100 text-green-800'
                         }`}>
-                          {user.role}
+                          {user.role || 'user'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}
+                        {user.created_at ? new Date(user.created_at).toLocaleDateString('id-ID') : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
@@ -301,10 +394,10 @@ const AdminUsers = () => {
         loading={submitLoading}
       >
         <FormInput
-          label="Name"
+          label="Full Name"
           type="text"
-          value={formData.nama}
-          onChange={(e) => setFormData({...formData, nama: e.target.value})}
+          value={formData.nama_lengkap}
+          onChange={(e) => setFormData({...formData, nama_lengkap: e.target.value})}
           required
         />
 

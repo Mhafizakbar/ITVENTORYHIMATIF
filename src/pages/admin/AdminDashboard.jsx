@@ -148,7 +148,7 @@ const AdminDashboard = () => {
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-2">Welcome to ITVentory Admin Panel</p>
+          <p className="text-sm sm:text-base text-gray-600 mt-2">Selamat datang diITVentory Admin Panel</p>
         </div>
 
         {/* Error Alert */}
@@ -183,23 +183,23 @@ const AdminDashboard = () => {
 
         {/* Quick Actions */}
         <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Quick Actions</h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Aksi Admin</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <Link to="/admin/users" className="bg-[#096b68] text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg hover:bg-[#004d49] transition-colors duration-200 flex items-center justify-center text-sm sm:text-base">
               <Users className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              Manage Users
+              Users
             </Link>
             <Link to="/admin/barang" className="bg-[#096b68] text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg hover:bg-[#004d49] transition-colors duration-200 flex items-center justify-center text-sm sm:text-base">
               <Package className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              Add Barang
+              Tambah Barang
             </Link>
             <Link to="/admin/kategori" className="bg-[#096b68] text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg hover:bg-[#004d49] transition-colors duration-200 flex items-center justify-center text-sm sm:text-base">
               <Tag className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              Add Kategori
+              Tambah Kategori
             </Link>
             <Link to="/admin/peminjaman" className="bg-[#096b68] text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg hover:bg-[#004d49] transition-colors duration-200 flex items-center justify-center text-sm sm:text-base">
               <FileText className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              View Peminjaman
+              Lihat Peminjaman
             </Link>
           </div>
         </div>
